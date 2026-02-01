@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 @AllArgsConstructor
@@ -18,7 +19,7 @@ public class StaffAttendanceAudit {
     private Long attendanceId;
     private String previousStatus;
     private String newStatus;
-    private Long changedBy;
+    private String changedBy;
     private String reason;
-    private LocalDate changedAt;
+    private LocalDateTime changedAt;
 }

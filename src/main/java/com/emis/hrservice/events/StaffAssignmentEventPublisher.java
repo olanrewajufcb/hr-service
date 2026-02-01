@@ -20,7 +20,7 @@ public class StaffAssignmentEventPublisher {
         return Mono.fromCallable(() -> {
             boolean sent =
                 streamBridge.send(
-                    "staffAssignment-out-0",
+                    "hrEvents-out-0",
                     MessageBuilder
                         .withPayload(outboxEvent.getPayload())
                         .setHeader("eventId", outboxEvent.getEventId().toString())

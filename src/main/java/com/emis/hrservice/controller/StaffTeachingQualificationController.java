@@ -65,4 +65,19 @@ public class StaffTeachingQualificationController {
 
     }
 
+    @Operation(summary = "Add subject specialization for a staff")
+    @PostMapping("/schools/{schoolCode}/staff/{staffCode}/subject-specialization")
+    @ResponseStatus(HttpStatus.CREATED)
+    public Mono<StaffTeachingQualificationResponse> addSubjectSpecialization(
+            @PathVariable String staffCode,
+            @PathVariable String schoolCode,
+            @RequestBody @Valid AddStaffTeachingQualificationRequest request) {
+
+        String requestId = UUID.randomUUID().toString();
+        return teachingQualificationService.addStaffTeachingQualification(
+                staffCode, schoolCode, request, requestId)
+                .contextWrite(ctx -> ctx.put("requestId", requestId));
+
+    }
+
 }

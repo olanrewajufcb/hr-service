@@ -7,8 +7,10 @@ import org.springframework.data.annotation.*;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Table(name = "staff_attendance", schema = "hr_schema")
 @Data
@@ -30,13 +32,13 @@ public class StaffAttendance {
     private LocalDate attendanceDate;
 
     @Column("check_in_time")
-    private LocalDateTime checkInTime;
+    private LocalTime checkInTime;
 
     @Column("check_out_time")
     private LocalDateTime checkOutTime;
 
     @Column("attendance_status")
-    private AttendanceStatus attendanceStatus;
+    private String attendanceStatus;
 
     @Column("check_in_method")
     private String checkInMethod;
@@ -47,12 +49,19 @@ public class StaffAttendance {
     @Column("recorded_by")
     private Long recordedBy;
 
+    private String checkInBy;
+    private LocalDate checkedInAt;
+    private String source;
+    private String confirmedBy;
+    private LocalDateTime finalizedAt;
+
     @CreatedDate
     @Column("recorded_at")
-    private LocalDateTime recordedAt;
+    private LocalDateTime confirmedAt;
+    private String confirmedByRole;
 
     @Column("absence_duration")
-    private AbsenceDuration absenceDuration;
+    private String absenceDuration;
 
     @Column("is_deleted")
     @Builder.Default

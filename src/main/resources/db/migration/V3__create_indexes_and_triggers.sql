@@ -17,6 +17,26 @@ CREATE INDEX idx_staff_school_role ON hr_schema.staff(school_id, staff_role);
 CREATE INDEX idx_textbook_type_subject ON hr_schema.textbook_inventory(book_type, subject_area, grade_level);
 CREATE UNIQUE INDEX ux_active_posting_per_staff ON hr_schema.staff_service_history (staff_id)
     WHERE end_date IS NULL AND is_deleted = FALSE;
+CREATE UNIQUE INDEX ux_active_transfer
+    ON hr_schema.staff_service_history (staff_id, to_school_code, start_date)
+    WHERE change_type = 'TRANSFER' AND is_deleted = false;
+CREATE UNIQUE INDEX ux_outbox_event_id
+    ON hr_schema.outbox_events(event_id);
+CREATE UNIQUE INDEX ux_staff_main_subject
+    ON hr_schema.staff_subject_specializations (staff_id)
+    WHERE is_main_teaching_subject = true AND is_deleted = false;
+
+CREATE UNIQUE INDEX uniq_textbook_inventory
+    ON hr_schema.textbook_inventory (
+                                     school_id,
+                                     title,
+                                     subject_area,
+                                     edition,
+                                     grade_level
+        )
+    WHERE is_deleted = false;
+
+
 
 
 -- To automatically update updated_at timestamp

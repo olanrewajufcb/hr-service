@@ -14,8 +14,15 @@ public interface StaffSubjectSpecializationRepository extends ReactiveCrudReposi
     
     Flux<StaffSubjectSpecialization> findByStaffIdAndIsDeletedFalse(Long staffId);
     
-    Flux<StaffSubjectSpecialization> findByStaffIdAndSubjectCodeAndIsDeletedFalse(Long staffId, String subjectCode);
+    Mono<StaffSubjectSpecialization> findByStaffIdAndSubjectCodeAndIsDeletedFalse(Long staffId, String subjectCode);
     
     @Query("UPDATE hr_schema.staff_subject_specializations SET is_deleted = true, deleted_at = CURRENT_TIMESTAMP WHERE specialization_id = $1")
     Mono<Void> softDelete(Long specializationId);
+
+    @Query("""
+            SELECT EXISTS (SELECT 1 FROM hr_schema.staff_subject_specializations 
+            WHERE staff_id = $1 
+            AND is_main_teaching_subject = true AND is_deleted = false)
+           """)
+    Mono<Boolean> existsByStaffIdAndIsMainTeachingSubjectTrueAndIsDeletedFalse(Long staffId);
 }

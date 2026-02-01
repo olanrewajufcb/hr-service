@@ -10,12 +10,15 @@ import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
 public interface StaffRepository extends ReactiveCrudRepository<Staff, Long> {
 
     Mono<Staff> findByStaffCode(String staffCode);
     
 
-    Flux<Staff> findBySchoolId(Long schoolId);
+    Flux<Staff> findActiveStaffBySchoolCode(String schoolCode);
     
     Flux<Staff> findBySchoolIdAndIsDeletedFalse(Long schoolId);
 
@@ -109,4 +112,12 @@ public interface StaffRepository extends ReactiveCrudRepository<Staff, Long> {
     )
 """)
     Mono<Boolean> existsByStaffCodeAndSchoolCodeAndIsDeletedFalse(String staffCode, String schoolCode);
+
+  @Query("""
+    UPDATE hr_schema.staff
+    SET school_code = $2, school_id = $3, 
+        current_school_posting_date = $4
+    WHERE staff_id = $1
+""")
+    Mono<Integer> updateStaffSchool(Long staffId, String schoolCode, Long schoolId, LocalDate startDate);
 }

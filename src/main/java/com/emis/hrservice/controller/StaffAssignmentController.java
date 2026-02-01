@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.UUID;
@@ -32,5 +33,23 @@ public class StaffAssignmentController {
     ) {
         String requestId = UUID.randomUUID().toString();
         return staffAssignmentService.assignStaffToClass(request, staffCode, schoolCode, requestId);
+    }
+
+    @Operation(summary = "view a staff member assignments")
+    @GetMapping("/schools/{schoolCode}/staff/{staffCode}/assignments")
+    @ResponseStatus(HttpStatus.OK)
+    public Flux<StaffAssignmentResponse> viewStaffAssignments(
+            @PathVariable String staffCode, @PathVariable String schoolCode
+    ) {
+        return staffAssignmentService.viewStaffAssignments(staffCode, schoolCode);
+    }
+
+    @Operation(summary = "view a staff member assignment by staff id")
+    @GetMapping("/staff/{staffId}/assignments")
+    @ResponseStatus(HttpStatus.OK)
+    public Flux<StaffAssignmentResponse> viewStaffAssignmentById(
+            @PathVariable Long staffId, @PathVariable Long assignmentId
+    ) {
+        return staffAssignmentService.viewStaffAssignmentById(staffId);
     }
 }

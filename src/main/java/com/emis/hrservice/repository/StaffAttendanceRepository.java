@@ -48,4 +48,7 @@ public interface StaffAttendanceRepository extends ReactiveCrudRepository<StaffA
     
     @Query("UPDATE hr_schema.staff_attendance SET is_deleted = true, deleted_at = CURRENT_TIMESTAMP WHERE attendance_id = $1")
     Mono<Void> softDelete(Long attendanceId);
+
+    Mono<StaffAttendance> findByStaffIdAndSchoolIdAndIsDeletedFalse(Long staffId, Long schoolId);
+    Mono<StaffAttendance> findByStaffIdAndSchoolIdAndAttendanceDateAndIsDeletedFalse(Long staffId, Long schoolId, LocalDate attendanceDate);
 }

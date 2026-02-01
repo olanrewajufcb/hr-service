@@ -28,23 +28,19 @@ public class StaffSubjectSpecialization {
     private String subjectName;
 
     @Column("is_qualification_subject")
-    @Builder.Default
-    private Boolean isQualificationSubject = false;
+    private Boolean isQualificationSubject;
 
     @Column("is_main_teaching_subject")
-    @Builder.Default
-    private Boolean isMainTeachingSubject = false;
+    private Boolean isMainTeachingSubject;
 
     @Column("years_experience_subject")
-    @Builder.Default
-    private Integer yearsExperienceSubject = 0;
+    private Integer yearsExperienceSubject;
 
     @Column("proficiency_level")
-    private ProficiencyLevel proficiencyLevel;
+    private String proficiencyLevel;
 
     @Column("is_deleted")
-    @Builder.Default
-    private Boolean isDeleted = false;
+    private Boolean isDeleted;
 
     @Column("deleted_at")
     private LocalDateTime deletedAt;

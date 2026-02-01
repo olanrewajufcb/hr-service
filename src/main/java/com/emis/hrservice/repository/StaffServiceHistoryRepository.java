@@ -37,4 +37,17 @@ public interface StaffServiceHistoryRepository extends ReactiveCrudRepository<St
     
     @Query("UPDATE hr_schema.staff_service_history SET is_deleted = true, deleted_at = CURRENT_TIMESTAMP WHERE history_id = $1")
     Mono<Void> softDelete(Long historyId);
+
+  @Query(
+      """
+        SELECT EXISTS (
+            SELECT 1 FROM hr_schema.staff_service_history
+            WHERE staff_id = $1
+            AND school_code = $2
+            AND start_date = $3
+            AND change_type = 'TRANSFER'
+            AND is_deleted = false
+        )
+    """)
+  Mono<Boolean> existsActiveTransfer(Long staffId, String schoolCode, LocalDate startDate);
 }

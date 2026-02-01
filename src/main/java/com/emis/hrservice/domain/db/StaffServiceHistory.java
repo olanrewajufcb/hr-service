@@ -48,7 +48,8 @@ public class StaffServiceHistory {
 
     @Column("to_school_id")
     private Long toSchoolId;
-
+    private String fromSchoolCode;
+    private String toSchoolCode;
     @Column("remarks")
     private String remarks;
 

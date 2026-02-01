@@ -117,9 +117,15 @@ CREATE TABLE hr_schema.staff (
                                  status VARCHAR(20) DEFAULT 'ACTIVE',
                                  is_deleted BOOLEAN DEFAULT FALSE,
                                  deleted_at TIMESTAMPTZ DEFAULT NULL,
-                                 created_at TIMESTAMPTZ DEFAULT NOW(),
                                  updated_at TIMESTAMPTZ DEFAULT NOW(),
-                                 UNIQUE (staff_code, school_code, is_deleted)
+
+                                 created_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
+                                 created_by        VARCHAR(50),       -- userId / staffCode / system
+                                 created_by_role   VARCHAR(30),       -- HEAD_TEACHER, ADMIN, SYSTEM
+                                 updated_by        VARCHAR(50),
+                                 source            VARCHAR(30)         -- WEB, MOBILE, SYSTEM, BATCH
+
+                                UNIQUE (staff_code, school_code, is_deleted)
 
 
 );
@@ -154,10 +160,16 @@ CREATE TABLE hr_schema.staff_academic_qualifications (
 
                                                          is_deleted BOOLEAN DEFAULT FALSE,
                                                          deleted_at TIMESTAMPTZ DEFAULT NULL,
-                                                         created_at TIMESTAMPTZ DEFAULT NOW(),
                                                          updated_at TIMESTAMPTZ DEFAULT NOW(),
+                                                         created_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
 
-                                                         UNIQUE(staff_id, qualification_level, year_obtained, deleted_at)
+                                                         created_by        VARCHAR(50),       -- userId / staffCode / system
+                                                         created_by_role   VARCHAR(30),       -- HEAD_TEACHER, ADMIN, SYSTEM
+                                                         updated_by        VARCHAR(50),
+                                                         source            VARCHAR(30)         -- WEB, MOBILE, SYSTEM, BATCH
+
+
+                                                        UNIQUE(staff_id, qualification_level, year_obtained, deleted_at)
 );
 
 -- 3. STAFF_TEACHING_QUALIFICATIONS
@@ -192,10 +204,14 @@ CREATE TABLE hr_schema.staff_teaching_qualifications (
 
                                                          is_deleted BOOLEAN DEFAULT FALSE,
                                                          deleted_at TIMESTAMPTZ DEFAULT NULL,
-                                                         created_at TIMESTAMPTZ DEFAULT NOW(),
                                                          updated_at TIMESTAMPTZ DEFAULT NOW(),
+                                                         created_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
+                                                         created_by        VARCHAR(50),       -- userId / staffCode / system
+                                                         created_by_role   VARCHAR(30),       -- HEAD_TEACHER, ADMIN, SYSTEM
+                                                         updated_by        VARCHAR(50),
+                                                         source            VARCHAR(30)         -- WEB, MOBILE, SYSTEM, BATCH
 
-                                                         UNIQUE(staff_id, teaching_qualification, subject_of_qualification, deleted_at)
+                                                        UNIQUE(staff_id, teaching_qualification, subject_of_qualification, deleted_at)
 );
 
 -- 4. STAFF_SUBJECT_SPECIALIZATIONS
@@ -213,9 +229,16 @@ CREATE TABLE hr_schema.staff_subject_specializations (
                                                          proficiency_level VARCHAR(20) CHECK (proficiency_level IN ('BEGINNER', 'INTERMEDIATE', 'ADVANCED', 'EXPERT')),
                                                          is_deleted BOOLEAN DEFAULT FALSE,
                                                          deleted_at TIMESTAMPTZ DEFAULT NULL,
-                                                         created_at TIMESTAMPTZ DEFAULT NOW(),
                                                          updated_at TIMESTAMPTZ DEFAULT NOW(),
-                                                         UNIQUE(staff_id, subject_code, deleted_at)
+
+                                                         created_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
+                                                         created_by        VARCHAR(50),       -- userId / staffCode / system
+                                                         created_by_role   VARCHAR(30),       -- HEAD_TEACHER, ADMIN, SYSTEM
+                                                         updated_by        VARCHAR(50),
+                                                         source            VARCHAR(30)         -- WEB, MOBILE, SYSTEM, BATCH
+
+
+                                                             UNIQUE(staff_id, subject_code, deleted_at)
 );
 
 -- 5. STAFF_ATTENDANCE (Daily attendance tracking)
@@ -223,7 +246,7 @@ CREATE TABLE hr_schema.staff_attendance (
                                             attendance_id BIGSERIAL PRIMARY KEY,
                                             staff_id BIGINT NOT NULL REFERENCES hr_schema.staff(staff_id) ON DELETE RESTRICT,
                                             school_id BIGINT NOT NULL,
-                                            attendance_date DATE NOT NULL,
+                                            attendance_date DATE NOT NULL DEFAULT NOW(),
                                             check_in_time TIMESTAMPTZ,
                                             check_out_time TIMESTAMPTZ,
                                             attendance_status VARCHAR(20) CHECK (attendance_status IN ('PRESENT',
@@ -248,8 +271,16 @@ CREATE TABLE hr_schema.staff_attendance (
                                             check_in_method VARCHAR(20),
                                             is_deleted BOOLEAN DEFAULT FALSE,
                                             deleted_at TIMESTAMPTZ DEFAULT NULL,
-                                            created_at TIMESTAMPTZ DEFAULT NOW(),
                                             updated_at TIMESTAMPTZ DEFAULT NOW(),
+                                            confirmed_at TIMESTAMPTZ DEFAULT NULL,
+                                            confirmed_by VARCHAR,
+                                            finalized_at TIMESTAMPTZ NULL
+
+                                            created_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
+                                            created_by        VARCHAR(50),       -- userId / staffCode / system
+                                            confirmed_by_role   VARCHAR(30),       -- HEAD_TEACHER, ADMIN, SYSTEM
+                                            updated_by        VARCHAR(50),
+                                            source            VARCHAR(30)         -- WEB, MOBILE, SYSTEM, BATCH
                                             CONSTRAINT check_present_has_checkin CHECK (
                                                 attendance_status != 'PRESENT'
                                                 OR check_in_time IS NOT NULL),
@@ -260,7 +291,7 @@ CREATE TABLE hr_schema.staff_attendance (
 CREATE TABLE hr_schema.textbook_inventory (
                                               textbook_id BIGSERIAL PRIMARY KEY,
                                               school_id BIGINT NOT NULL,
-
+                                              school_code VARCHAR(50) NOT NULL,
     -- Book Type
                                               book_type VARCHAR(20) CHECK (book_type IN ('PUPIL_BOOK', 'TEACHERS_BOOK', 'CAREGIVER_MANUAL')),
                                               provided_by VARCHAR(50) CHECK (provided_by IN ('GOVERNMENT', 'SCHOOL', 'DONATION', 'OTHER')),
@@ -292,7 +323,7 @@ CREATE TABLE hr_schema.textbook_inventory (
                                               title VARCHAR(255) NOT NULL,
                                               author VARCHAR(255),
                                               publisher VARCHAR(255),
-                                              edition VARCHAR(50),
+                                              edition VARCHAR(50) NOT NULL,
                                               isbn VARCHAR(50),
                                               publication_year INTEGER,
 
@@ -310,8 +341,13 @@ CREATE TABLE hr_schema.textbook_inventory (
                                               status VARCHAR(20) DEFAULT 'ACTIVE',
                                               is_deleted BOOLEAN DEFAULT FALSE,
                                               deleted_at TIMESTAMPTZ DEFAULT NULL,
-                                              created_at TIMESTAMPTZ DEFAULT NOW(),
                                               updated_at TIMESTAMPTZ DEFAULT NOW(),
+                                              created_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
+                                              created_by        VARCHAR(50),       -- userId / staffCode / system
+                                              created_by_role   VARCHAR(30),       -- HEAD_TEACHER, ADMIN, SYSTEM
+                                              updated_by        VARCHAR(50),
+                                              source            VARCHAR(30)         -- WEB, MOBILE, SYSTEM, BATCH
+
 
                                               CHECK (available_quantity + issued_quantity + damaged_quantity <= total_quantity)
 );
@@ -353,8 +389,14 @@ CREATE TABLE hr_schema.textbook_issuance (
                                                  )),
                                              is_deleted BOOLEAN DEFAULT FALSE,
                                              deleted_at TIMESTAMPTZ DEFAULT NULL,
-                                             created_at TIMESTAMPTZ DEFAULT NOW(),
-                                             updated_at TIMESTAMPTZ DEFAULT NOW()
+                                             updated_at TIMESTAMPTZ DEFAULT NOW(),
+
+                                             created_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
+                                             created_by        VARCHAR(50),       -- userId / staffCode / system
+                                             created_by_role   VARCHAR(30),       -- HEAD_TEACHER, ADMIN, SYSTEM
+                                             updated_by        VARCHAR(50),
+                                             source            VARCHAR(30)         -- WEB, MOBILE, SYSTEM, BATCH
+
 );
 
 -- 8. STAFF_ASSIGNMENTS (Teaching Assignments)
@@ -401,10 +443,15 @@ CREATE TABLE hr_schema.staff_assignments (
     -- System Fields
                                              is_deleted BOOLEAN DEFAULT FALSE,
                                              deleted_at TIMESTAMPTZ DEFAULT NULL,
-                                             created_at TIMESTAMPTZ DEFAULT NOW(),
                                              updated_at TIMESTAMPTZ DEFAULT NOW(),
+                                             created_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
+                                             created_by        VARCHAR(50),       -- userId / staffCode / system
+                                             created_by_role   VARCHAR(30),       -- HEAD_TEACHER, ADMIN, SYSTEM
+                                             updated_by        VARCHAR(50),
+                                             source            VARCHAR(30)         -- WEB, MOBILE, SYSTEM, BATCH
 
-                                             UNIQUE(staff_id, class_id, subject_id, academic_year, deleted_at)
+
+                                            UNIQUE(staff_id, class_id, subject_id, academic_year, deleted_at)
 );
 
 -- 9. STAFF_SERVICE_HISTORY
@@ -434,6 +481,8 @@ CREATE TABLE hr_schema.staff_service_history (
                                                  new_position VARCHAR(100),
                                                  from_school_id BIGINT,
                                                  to_school_id BIGINT,
+                                                 from_school_code VARCHAR(100),
+                                                 to_school_code VARCHAR(100),
 
                                                  remarks TEXT,
                                                  documented_by BIGINT, -- Staff ID who documented
@@ -442,8 +491,13 @@ CREATE TABLE hr_schema.staff_service_history (
     -- System Fields
                                                  is_deleted BOOLEAN DEFAULT FALSE,
                                                  deleted_at TIMESTAMPTZ DEFAULT NULL,
-                                                 created_at TIMESTAMPTZ DEFAULT NOW(),
-                                                 updated_at TIMESTAMPTZ DEFAULT NOW()
+                                                 updated_at TIMESTAMPTZ DEFAULT NOW(),
+                                                 created_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
+                                                 created_by        VARCHAR(50),       -- userId / staffCode / system
+                                                 created_by_role   VARCHAR(30),       -- HEAD_TEACHER, ADMIN, SYSTEM
+                                                 updated_by        VARCHAR(50),
+                                                 source            VARCHAR(30)         -- WEB, MOBILE, SYSTEM, BATCH
+
 
 
 );
@@ -484,8 +538,13 @@ CREATE TABLE hr_schema.hr_reports_config (
     -- System Fields
                                              is_deleted BOOLEAN DEFAULT FALSE,
                                              deleted_at TIMESTAMPTZ DEFAULT NULL,
-                                             created_at TIMESTAMPTZ DEFAULT NOW(),
-                                             updated_at TIMESTAMPTZ DEFAULT NOW()
+                                             updated_at TIMESTAMPTZ DEFAULT NOW(),
+                                             created_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
+                                             created_by        VARCHAR(50),       -- userId / staffCode / system
+                                             created_by_role   VARCHAR(30),       -- HEAD_TEACHER, ADMIN, SYSTEM
+                                             updated_by        VARCHAR(50),
+                                             source            VARCHAR(30)         -- WEB, MOBILE, SYSTEM, BATCH
+
 );
 
 
@@ -514,8 +573,28 @@ CREATE TABLE hr_schema.outbox_events (
                                          published_at TIMESTAMPTZ
 );
 
-CREATE UNIQUE INDEX ux_outbox_event_id
-    ON hr_schema.outbox_events(event_id);
+
+CREATE TABLE academic_schema.school_attendance_policy (
+                                                          policy_id BIGSERIAL PRIMARY KEY,
+
+                                                          school_id BIGINT NOT NULL,
+                                                          school_code VARCHAR(50) NOT NULL,
+
+                                                          check_in_time TIME NOT NULL,
+                                                          cut_off_time TIME NOT NULL,
+
+                                                          late_threshold_minutes INT DEFAULT 0,
+
+                                                          effective_from DATE NOT NULL,
+                                                          effective_to DATE,
+
+                                                          status VARCHAR(20) DEFAULT 'ACTIVE',
+
+                                                          created_at TIMESTAMPTZ DEFAULT NOW(),
+                                                          updated_at TIMESTAMPTZ DEFAULT NOW(),
+
+                                                          UNIQUE (school_id, effective_from)
+);
 
 
 

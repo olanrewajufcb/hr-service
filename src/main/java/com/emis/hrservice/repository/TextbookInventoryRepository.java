@@ -12,8 +12,16 @@ import reactor.core.publisher.Mono;
 public interface TextbookInventoryRepository extends ReactiveCrudRepository<TextbookInventory, Long> {
 
     Flux<TextbookInventory> findBySchoolId(Long schoolId);
-    
-    Flux<TextbookInventory> findBySchoolIdAndIsDeletedFalse(Long schoolId);
+
+    @Query("""
+        SELECT * FROM hr_schema.textbook_inventory 
+        WHERE school_id = $1 
+        AND is_deleted = false
+        ORDER BY subject_area, grade_level, title
+        LIMIT $2 OFFSET $3
+    """)
+    Flux<TextbookInventory> findBySchoolIdAndIsDeletedFalse(Long schoolId, int size, long offset);
+    Mono<Integer> countBySchoolIdAndIsDeletedFalse(Long schoolId);
     
     Flux<TextbookInventory> findBySchoolIdAndBookTypeAndIsDeletedFalse(Long schoolId, BookType bookType);
     
@@ -26,10 +34,11 @@ public interface TextbookInventoryRepository extends ReactiveCrudRepository<Text
             SubjectArea subjectArea,
             GradeLevel gradeLevel);
     
-    Mono<TextbookInventory> findBySchoolIdAndTitleAndSubjectAreaAndGradeLevelAndIsDeletedFalse(
+    Mono<TextbookInventory> findBySchoolIdAndTitleAndSubjectAreaAndEditionAndGradeLevelAndIsDeletedFalse(
             Long schoolId, 
             String title,
             SubjectArea subjectArea,
+            String edition,
             GradeLevel gradeLevel);
     
     @Query("""

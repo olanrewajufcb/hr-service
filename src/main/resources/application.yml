@@ -28,11 +28,12 @@ spring:
     stream:
       defaultBinder: kafka
       bindings:
-        staffAssignment-out-0:
-          destination: hr.staff.assignment.v1
+        hrEvents-out-0:
+          destination: hr.events.v1
           content-type: application/json
           producer:
             error-channel-enabled: true
+
 
       kafka:
         binder:
@@ -100,5 +101,14 @@ emis:
       base-url: ${EMIS_SERVICE_URL:http://localhost:8084}
       get-class-section-url: ${emis.services.academic-service-properties.base-url}/api/v1/academic/schools/{schoolCode}/classes/{classId}/sections/{sectionId}
 
+
     timeout: 5
+
+    school-attendance-configuration:
+         check-in-time: "08:00:00"
+         cut-off-time: "10:30:00"
+
+
+
+
 

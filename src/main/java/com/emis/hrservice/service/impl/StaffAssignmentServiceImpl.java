@@ -21,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.reactive.TransactionalOperator;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.Instant;
@@ -57,7 +58,23 @@ public class StaffAssignmentServiceImpl implements StaffAssignmentService {
                 .map(StaffAssignmentResponse::from);
     }
 
-  private Mono<Staff> validateTeachingEligibility(
+    @Override
+    public Flux<StaffAssignmentResponse> viewStaffAssignments(String staffCode, String schoolCode) {
+        return staffRepository.findByStaffCodeAndSchoolCodeAndIsDeletedFalse(staffCode, schoolCode)
+                .switchIfEmpty(Mono.error(new ResourceNotFoundException("Staff not found")))
+                .flatMapMany(staff -> staffAssignmentRepository.findByStaffIdAndIsDeletedFalse(staff.getStaffId())
+                        .map(StaffAssignmentResponse::from));
+    }
+
+    @Override
+    public Flux<StaffAssignmentResponse> viewStaffAssignmentById(Long staffId) {
+        return staffRepository.findById(staffId)
+                .switchIfEmpty(Mono.error(new ResourceNotFoundException("Staff not found")))
+                .flatMapMany(staff -> staffAssignmentRepository.findByStaffIdAndIsDeletedFalse(staff.getStaffId())
+                        .map(StaffAssignmentResponse::from));
+    }
+
+    private Mono<Staff> validateTeachingEligibility(
       Staff staff, CreateStaffAssignmentRequest request) {
 
         boolean isTeachingStaff = request.assignmentRole().equals(AssignmentRole.FORM_TEACHER)
@@ -117,7 +134,7 @@ public class StaffAssignmentServiceImpl implements StaffAssignmentService {
                         .aggregateType("STAFF_ASSIGNMENT")
                         .aggregateId(assignment.getAssignmentId().toString())
                         .eventType(event.getEventType())
-                        .topic("hr.staff.assignment.v1")
+                        .topic("hr.events.v1")
                         .payload(objectMapper.valueToTree(event))
                         .status("PENDING")
                         .build()

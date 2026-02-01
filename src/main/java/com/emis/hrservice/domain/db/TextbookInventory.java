@@ -26,16 +26,16 @@ public class TextbookInventory {
     private Long schoolId;
 
     @Column("book_type")
-    private BookType bookType;
+    private String bookType;
 
     @Column("provided_by")
-    private ProvidedBy providedBy;
+    private String providedBy;
 
     @Column("subject_area")
-    private SubjectArea subjectArea;
+    private String subjectArea;
 
     @Column("grade_level")
-    private GradeLevel gradeLevel;
+    private String gradeLevel;
 
     @Column("title")
     private String title;
@@ -56,20 +56,16 @@ public class TextbookInventory {
     private Integer publicationYear;
 
     @Column("total_quantity")
-    @Builder.Default
-    private Integer totalQuantity = 0;
+    private Integer totalQuantity;
 
     @Column("available_quantity")
-    @Builder.Default
-    private Integer availableQuantity = 0;
+    private Integer availableQuantity;
 
     @Column("issued_quantity")
-    @Builder.Default
-    private Integer issuedQuantity = 0;
+    private Integer issuedQuantity;
 
     @Column("damaged_quantity")
-    @Builder.Default
-    private Integer damagedQuantity = 0;
+    private Integer damagedQuantity;
 
     @Column("storage_location")
     private String storageLocation;
@@ -78,12 +74,10 @@ public class TextbookInventory {
     private LocalDate lastAuditDate;
 
     @Column("status")
-    @Builder.Default
-    private String status = "ACTIVE";
+    private String status;
 
     @Column("is_deleted")
-    @Builder.Default
-    private Boolean isDeleted = false;
+    private Boolean isDeleted;
 
     @Column("deleted_at")
     private LocalDateTime deletedAt;
