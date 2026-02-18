@@ -36,6 +36,11 @@ CREATE UNIQUE INDEX uniq_textbook_inventory
         )
     WHERE is_deleted = false;
 
+CREATE UNIQUE INDEX IF NOT EXISTS idx_attendance_daily_school_date
+    ON hr_schema.analytics_staff_attendance_daily (school_id, attendance_date);
+
+CREATE INDEX IF NOT EXISTS idx_attendance_risk_school
+    ON hr_schema.analytics_staff_attendance_risk (school_id);
 
 
 

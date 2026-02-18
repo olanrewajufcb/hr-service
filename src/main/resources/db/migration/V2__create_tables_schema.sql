@@ -245,6 +245,7 @@ CREATE TABLE hr_schema.staff_subject_specializations (
 CREATE TABLE hr_schema.staff_attendance (
                                             attendance_id BIGSERIAL PRIMARY KEY,
                                             staff_id BIGINT NOT NULL REFERENCES hr_schema.staff(staff_id) ON DELETE RESTRICT,
+                                            staff_code VARCHAR(50) NOT NULL, -- denormalized from staff.staff_code
                                             school_id BIGINT NOT NULL,
                                             attendance_date DATE NOT NULL DEFAULT NOW(),
                                             check_in_time TIMESTAMPTZ,
@@ -252,6 +253,7 @@ CREATE TABLE hr_schema.staff_attendance (
                                             attendance_status VARCHAR(20) CHECK (attendance_status IN ('PRESENT',
                                                                                                        'ABSENT',
                                                                                                        'LATE',
+                                                                                                       'LEAVE',
                                                                                                        'SICK_LEAVE',
                                                                                                        'ANNUAL_LEAVE',
                                                                                                        'MATERNITY_LEAVE',
@@ -269,6 +271,7 @@ CREATE TABLE hr_schema.staff_attendance (
                                                                             'MORE_THAN_ONE_MONTH'
                                                     )),
                                             check_in_method VARCHAR(20),
+                                            is_physical_confirmed BOOLEAN NOT NULL DEFAULT FALSE,
                                             is_deleted BOOLEAN DEFAULT FALSE,
                                             deleted_at TIMESTAMPTZ DEFAULT NULL,
                                             updated_at TIMESTAMPTZ DEFAULT NOW(),
@@ -506,6 +509,7 @@ CREATE TABLE hr_schema.staff_service_history (
 CREATE TABLE hr_schema.hr_reports_config (
                                              report_id BIGSERIAL PRIMARY KEY,
                                              school_id BIGINT NOT NULL,
+                                             school_code VARCHAR(100) NOT NULL,
                                              report_type VARCHAR(50) CHECK (report_type IN (
                                                                                             'STAFF_LIST',
                                                                                             'QUALIFICATION_SUMMARY',
@@ -515,6 +519,10 @@ CREATE TABLE hr_schema.hr_reports_config (
                                                                                             'STAFF_DEPLOYMENT',
                                                                                             'GOVERNMENT_REPORT'
                                                  )),
+                                             report_format VARCHAR(20) CHECK (report_format IN (
+                                                                                                'PDF',
+                                                                                                'EXCEL'
+                                                                                               )),
 
     -- Report Parameters
                                              academic_year VARCHAR(10),
@@ -546,6 +554,40 @@ CREATE TABLE hr_schema.hr_reports_config (
                                              source            VARCHAR(30)         -- WEB, MOBILE, SYSTEM, BATCH
 
 );
+
+CREATE TABLE hr_schema.textbook_inventory_transactions (
+                                                           transaction_id BIGSERIAL PRIMARY KEY,
+                                                           textbook_id BIGINT NOT NULL REFERENCES hr_schema.textbook_inventory(textbook_id),
+
+                                                           transaction_type VARCHAR(30) NOT NULL CHECK (transaction_type IN (
+                                                                                                                             'RECEIVE',
+                                                                                                                             'ISSUE',
+                                                                                                                             'RETURN',
+                                                                                                                             'DAMAGE',
+                                                                                                                             'LOSS',
+                                                                                                                             'ADJUSTMENT'
+                                                               )),
+
+                                                           quantity INTEGER NOT NULL CHECK (quantity > 0),
+
+                                                           issued_to_type VARCHAR(20) CHECK (issued_to_type IN (
+                                                                                                                'STUDENT',
+                                                                                                                'TEACHER',
+                                                                                                                'CAREGIVER',
+                                                                                                                'CLASS',
+                                                                                                                'STORE'
+                                                               )),
+
+                                                           issued_to_code VARCHAR,
+                                                           issued_to_name VARCHAR(255),
+
+                                                           reference VARCHAR(100),
+                                                           notes TEXT,
+
+                                                           performed_by VARCHAR, -- staff_code
+                                                           performed_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 
 
 CREATE TABLE hr_schema.staff_attendance_audit (

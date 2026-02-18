@@ -1,6 +1,6 @@
 package com.emis.hrservice.controller;
 
-import com.emis.hrservice.dto.request.AddTextbookRequest;
+import com.emis.hrservice.dto.request.*;
 import com.emis.hrservice.dto.response.AddTextbookResponse;
 import com.emis.hrservice.dto.response.TextbookInventoryResponse;
 import com.emis.hrservice.service.TextbookManagementService;
@@ -53,6 +53,46 @@ public class TextbookManagementController {
         String requestId = UUID.randomUUID().toString();
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
         return textbookManagementService.retrieveTextbooksFromInventory(schoolCode, pageable, requestId)
+                .contextWrite(ctx -> ctx.put("requestId", requestId));
+    }
+
+    @Operation(summary = "textbook received by a school")
+    @PostMapping("/textbooks/{textbookId}/received")
+    @ResponseStatus(HttpStatus.OK)
+    public Mono<TextbookInventoryResponse> receiveTextbook(@PathVariable Long textbookId,
+                                      @RequestBody @Valid ReceiveTextbookRequest request) {
+        String requestId = UUID.randomUUID().toString();
+        return textbookManagementService.receiveTextbooks(textbookId, request, requestId)
+                .contextWrite(ctx -> ctx.put("requestId", requestId));
+    }
+
+    @Operation(summary = "issue textbooks to someone")
+    @PostMapping("/textbooks/{textbookId}/issue")
+    @ResponseStatus(HttpStatus.OK)
+    public Mono<TextbookInventoryResponse> issueTextbooks(@PathVariable Long textbookId,
+                                      @RequestBody @Valid IssueTextbookRequest request) {
+        String requestId = UUID.randomUUID().toString();
+        return textbookManagementService.issueTextbooks(textbookId, request)
+                .contextWrite(ctx -> ctx.put("requestId", requestId));
+    }
+
+    @Operation(summary = "return textbooks to a school")
+    @PostMapping("/textbooks/{textbookId}/return")
+    @ResponseStatus(HttpStatus.OK)
+    public Mono<TextbookInventoryResponse> returnTextbooks(@PathVariable Long textbookId,
+                                      @RequestBody @Valid ReturnTextbookRequest request) {
+        String requestId = UUID.randomUUID().toString();
+        return textbookManagementService.returnTextbooks(textbookId, request)
+                .contextWrite(ctx -> ctx.put("requestId", requestId));
+    }
+
+    @Operation(summary = "record damaged textbooks")
+    @PostMapping("/textbooks/{textbookId}/damage")
+    @ResponseStatus(HttpStatus.OK)
+    public Mono<TextbookInventoryResponse> markDamagedTextbooks(@PathVariable Long textbookId,
+                                      @RequestBody @Valid DamageTextbookRequest request) {
+        String requestId = UUID.randomUUID().toString();
+        return textbookManagementService.markDamaged(textbookId, request)
                 .contextWrite(ctx -> ctx.put("requestId", requestId));
     }
 }

@@ -77,6 +77,9 @@ public class StaffAttendanceServiceImpl implements StaffAttendanceService {
     @Override
     public Mono<StaffAttendanceResponse> markStaffAttendance(StaffAttendanceRequest request,
                                   String schoolCode, String requestId) {
+        if (request.confirmerStaffCode().equals(request.staffCode())){
+            return Mono.error(new ValidationException("Staff can not confirm their own attendance"));
+        }
         return Mono.deferContextual(ctx -> {
             AuditContext audit = ctx.get("audit");
 
@@ -119,11 +122,14 @@ public class StaffAttendanceServiceImpl implements StaffAttendanceService {
             BulkAttendanceConfirmationRequest request,
             Long schoolId
     ) {
+        if (item.staffCode().equals(request.confirmedByStaffCode())) {
+            return Mono.error(new ValidationException("Staff can not confirm their own attendance"));
+        }
         return staffAttendanceRepository
                 .findById(item.attendanceId())
                 .filter(att -> att.getSchoolId().equals(schoolId))
                 .filter(att -> att.getAttendanceDate().equals(request.attendanceDate()))
-                .filter(att -> att.getStaffId().equals(item.staffCode()))
+                .filter(att -> att.getStaffCode().equals(item.staffCode()))
                 .flatMap(attendance -> {
 
                     if (AttendanceStatus.PRESENT.name().equals(attendance.getAttendanceStatus())) {
@@ -137,6 +143,7 @@ public class StaffAttendanceServiceImpl implements StaffAttendanceService {
 
                     attendance.setAttendanceStatus(item.status().name());
                     attendance.setConfirmedBy(request.confirmedByStaffCode());
+                    attendance.setIsPhysicallyConfirmed(request.isPhysicallyConfirmed());
                     attendance.setConfirmedAt(LocalDateTime.now());
                     attendance.setNotes(item.notes());
 
@@ -210,6 +217,7 @@ public class StaffAttendanceServiceImpl implements StaffAttendanceService {
                                 StaffAttendance attendance = new  StaffAttendance();
                                 attendance.setAttendanceStatus(AttendanceStatus.CHECKED_IN.name());
                                 attendance.setStaffId(staff.getStaffId());
+                                attendance.setStaffCode(request.staffCode());
                                 attendance.setCheckInTime(request.checkInTime());
                                 attendance.setAttendanceDate(request.attendanceDate());
                                 attendance.setCheckInBy(audit.userId());
@@ -248,10 +256,14 @@ public class StaffAttendanceServiceImpl implements StaffAttendanceService {
       if (AttendanceStatus.PRESENT.name().equals(attendance.getAttendanceStatus())) {
           return Mono.error(new ResourceAlreadyExistsException("Attendance already confirmed"));
       }
+      if (attendance.getIsPhysicallyConfirmed()){
+          return Mono.error(new ResourceAlreadyExistsException("Attendance already physically confirmed"));
+      }
       String previousStatus = attendance.getAttendanceStatus();
       String newStatus =  AttendanceStatus.LATE.name().equals(previousStatus)
                       ? AttendanceStatus.LATE.name()
                       : AttendanceStatus.PRESENT.name();
+      attendance.setIsPhysicallyConfirmed(request.isPhysicallyConfirmed());
       attendance.setAttendanceStatus(newStatus);
       attendance.setConfirmedBy(audit.userId());
       attendance.setConfirmedByRole(audit.role());

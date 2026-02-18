@@ -1,13 +1,13 @@
 package com.emis.hrservice.events;
 
 import com.emis.hrservice.events.outbox.OutboxEvent;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 @Slf4j
 @Component
@@ -34,6 +34,6 @@ public class StaffAssignmentEventPublisher {
             }
 
             return true;
-        }).then();
+        }).then().subscribeOn(Schedulers.boundedElastic());
     }
 }

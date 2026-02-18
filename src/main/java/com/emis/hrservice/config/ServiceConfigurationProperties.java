@@ -39,6 +39,8 @@ public class ServiceConfigurationProperties {
 
     private int timeout;
 
+    private String storageBaseUrl;
+
 
 
 

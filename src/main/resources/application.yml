@@ -34,18 +34,10 @@ spring:
           producer:
             error-channel-enabled: true
 
-
-      kafka:
-        binder:
-          brokers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
-        bindings:
-          staffAssignment-out-0:
-            producer:
-              configuration:
-                acks: all
-                enable-idempotence: true
-                retries: 5
-                max.in-flight.requests.per.connection: 5
+        reportProcessor-in-0:
+          destination: hr.events.v1
+          group: hr-report-processor
+          content-type: application/json
 
 
 
@@ -107,6 +99,8 @@ emis:
     school-attendance-configuration:
          check-in-time: "08:00:00"
          cut-off-time: "10:30:00"
+
+    storage-base-url: ${EMIS_STORAGE_URL:http://localhost:8086/reports}
 
 
 

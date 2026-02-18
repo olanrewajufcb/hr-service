@@ -25,6 +25,8 @@ public class TextbookInventory {
     @Column("school_id")
     private Long schoolId;
 
+    private String schoolCode;
+
     @Column("book_type")
     private String bookType;
 

@@ -11,6 +11,8 @@ public record StaffCheckInRequest(
         @NotNull
         Long staffId,
         @NotBlank
+        String staffCode,
+        @NotBlank
         String schoolCode,
         @NotNull
         LocalDate attendanceDate,

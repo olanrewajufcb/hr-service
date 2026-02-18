@@ -13,6 +13,8 @@ public record StaffAttendanceRequest(
         @NotNull
         Long attendanceId,
         @NotNull
+        Boolean isPhysicallyConfirmed,
+        @NotNull
         LocalDate attendanceDate,
         String reason,
         String notes

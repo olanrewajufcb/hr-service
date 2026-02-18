@@ -25,6 +25,8 @@ public class StaffAttendance {
     @Column("staff_id")
     private Long staffId;
 
+    private String staffCode;
+
     @Column("school_id")
     private Long schoolId;
 
@@ -45,6 +47,8 @@ public class StaffAttendance {
 
     @Column("notes")
     private String notes;
+
+    private Boolean isPhysicallyConfirmed;
 
     @Column("recorded_by")
     private Long recordedBy;

@@ -6,6 +6,7 @@ import java.util.List;
 public record BulkAttendanceConfirmationRequest(
     LocalDate attendanceDate,
     String confirmedByStaffCode,
+    Boolean isPhysicallyConfirmed,
     List<BulkStaffAttendanceConfirmation> confirmations
 
     ) {}

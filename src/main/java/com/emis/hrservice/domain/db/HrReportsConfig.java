@@ -24,8 +24,13 @@ public class HrReportsConfig {
     @Column("school_id")
     private Long schoolId;
 
+    private String schoolCode;
+
     @Column("report_type")
-    private ReportType reportType;
+    private String reportType;
+
+    @Column("report_format")
+    private String reportFormat;
 
     @Column("academic_year")
     private String academicYear;
@@ -40,7 +45,7 @@ public class HrReportsConfig {
     private JsonNode reportData; // Using JsonNode for JSONB in R2DBC
 
     @Column("generation_status")
-    private GenerationStatus generationStatus;
+    private String generationStatus;
 
     @Column("file_path")
     private String filePath;

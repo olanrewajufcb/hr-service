@@ -1,5 +1,6 @@
 package com.emis.hrservice.repository;
 
+import com.emis.hrservice.domain.StaffListReportRow;
 import com.emis.hrservice.domain.db.Staff;
 import com.emis.hrservice.enums.StaffCategory;
 import com.emis.hrservice.enums.StaffRole;
@@ -120,4 +121,19 @@ public interface StaffRepository extends ReactiveCrudRepository<Staff, Long> {
     WHERE staff_id = $1
 """)
     Mono<Integer> updateStaffSchool(Long staffId, String schoolCode, Long schoolId, LocalDate startDate);
+
+    @Query("""
+    SELECT
+        staff_code AS staffCode,
+        CONCAT(first_name, ' ', last_name) AS fullName,
+        staff_role AS staffRole,
+        staff_category AS staffCategory,
+        employment_type AS employmentType,
+        status
+    FROM hr_schema.staff
+    WHERE school_id = $1
+      AND is_deleted = false
+    ORDER BY last_name, first_name
+""")
+    Flux<StaffListReportRow> fetchStaffForReport(Long schoolId);
 }

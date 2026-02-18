@@ -36,4 +36,12 @@ public interface HrReportsConfigRepository extends ReactiveCrudRepository<HrRepo
 
     @Query("UPDATE hr_schema.hr_reports_config SET is_deleted = true, deleted_at = CURRENT_TIMESTAMP WHERE report_id = $1")
     Mono<Void> softDelete(Long reportId);
+
+    @Query("""
+       UPDATE hr_schema.hr_reports_config
+       SET generation_status = $2
+       WHERE report_id = $1
+       """)
+    Mono<Void> updateStatus(Long reportId, String status);
+
 }

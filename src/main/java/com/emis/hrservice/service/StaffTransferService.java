@@ -7,7 +7,8 @@ import reactor.core.publisher.Mono;
 
 public interface StaffTransferService {
 
-    Mono<StaffTransferResponse> transferStaff(String staffCode, StaffTransferRequest request, String requestId);
+    Mono<StaffTransferResponse> transferStaff(
+            String staffCode, StaffTransferRequest request, String requestId);
 
     Flux<StaffTransferResponse> getStaffServiceHistory(Long staffId);
 }
