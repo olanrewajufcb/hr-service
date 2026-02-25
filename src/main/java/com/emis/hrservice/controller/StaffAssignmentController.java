@@ -45,11 +45,11 @@ public class StaffAssignmentController {
     }
 
     @Operation(summary = "view a staff member assignment by staff id")
-    @GetMapping("/staff/{staffId}/assignments")
+    @GetMapping("/assignments/{assignmentId}")
     @ResponseStatus(HttpStatus.OK)
-    public Flux<StaffAssignmentResponse> viewStaffAssignmentById(
-            @PathVariable Long staffId, @PathVariable Long assignmentId
+    public Mono<StaffAssignmentResponse> viewStaffAssignmentById(
+             @PathVariable Long assignmentId
     ) {
-        return staffAssignmentService.viewStaffAssignmentById(staffId);
+        return staffAssignmentService.viewStaffAssignmentById(assignmentId);
     }
 }

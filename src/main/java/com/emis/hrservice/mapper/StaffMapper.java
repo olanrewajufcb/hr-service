@@ -14,7 +14,7 @@ public interface StaffMapper {
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "status", constant = "ACTIVE")
-    @Mapping(target = "photoUrl", ignore = true)
+    @Mapping(target = "staffPhotoUrl", ignore = true)
     @Mapping(source = "employmentType", target = "employmentType")
     @Mapping(source = "salarySource", target = "salarySource")
     @Mapping(target = "yearsOfExperience", ignore = true)

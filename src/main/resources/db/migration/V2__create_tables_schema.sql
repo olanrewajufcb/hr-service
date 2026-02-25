@@ -25,75 +25,18 @@ CREATE TABLE hr_schema.staff (
                                  nationality VARCHAR(100),
 
     -- Employment Details
-                                 staff_category VARCHAR(20) NOT NULL CHECK (staff_category IN (
-                                                                              'TEACHING',
-                                                                              'NON_TEACHING'
+                                 staff_category VARCHAR(20) NOT NULL,
+                                 staff_role VARCHAR(30) NOT NULL,
 
-
-                                     )),
-                                 staff_role VARCHAR(30) NOT NULL CHECK (staff_role IN (
-                                     -- Teaching
-                                                                              'HEAD_TEACHER',
-                                                                              'ASSISTANT_HEAD_TEACHER',
-                                                                              'TEACHER',
-                                                                              'PRE_PRIMARY_TEACHER',
-
-                                     -- Non-teaching
-                                                                              'CAREGIVER',
-                                                                              'CLERK',
-                                                                              'GUARD',
-                                                                              'CLEANER',
-                                                                              'SECURITY',
-                                                                              'DRIVER',
-                                                                              'OTHERS'
-                                     )),
-                                 CHECK (
-                                     (staff_category = 'TEACHING' AND staff_role IN (
-                                                                                     'HEAD_TEACHER',
-                                                                                     'ASSISTANT_HEAD_TEACHER',
-                                                                                     'TEACHER',
-                                                                                     'PRE_PRIMARY_TEACHER'
-                                         ))
-                                         OR
-                                     (staff_category = 'NON_TEACHING' AND staff_role IN (
-                                                                                         'CAREGIVER',
-                                                                                         'CLERK',
-                                                                                         'GUARD',
-                                                                                         'CLEANER',
-                                                                                         'SECURITY',
-                                                                                         'DRIVER',
-                                                                                         'OTHERS'
-                                         ))
-                                     ),
-
-
-                                     employment_type VARCHAR(20) NOT NULL CHECK (employment_type IN (
-                                                                                        'FULL_TIME',
-                                                                                        'PART_TIME',
-                                                                                        'VOLUNTEER',
-                                                                                        'NYSC',
-                                                                                        'CONTRACT'
-                                     )),
-                                    salary_source VARCHAR(50) CHECK (salary_source IN (
-                                                                                    'FEDERAL_GOVERNMENT_FTS',
-                                                                                    'STATE_GOVERNMENT_SCHOOL_PAYROLL',
-                                                                                    'STATE_GOVERNMENT_OTHER_SCHOOL',
-                                                                                    'COMMUNITY_PTA',
-                                                                                    'VOLUNTEER_NO_SALARY',
-                                                                                    'NYSC',
-                                                                                    'OTHER'
-                                     )),
+                                     employment_type VARCHAR(20) NOT NULL,
+                                    salary_source VARCHAR(50),
                                  employment_date DATE,
                                  appointment_date DATE,
 
     -- Teaching Specific (for teachers only)
                                  main_subject_taught VARCHAR(50), -- Reference to academic_schema.subjects
                                  secondary_subjects VARCHAR(50)[], -- Array of subject codes
-                                 CHECK (
-                                     (staff_category = 'NON_TEACHING' AND main_subject_taught IS NULL)
-                                         OR
-                                     (staff_category = 'TEACHING' AND main_subject_taught IS NOT NULL)
-                                     ),
+
 
                                      current_school_posting_date DATE, --You populate current_school_posting_date from the latest
    -- staff_service_history.
@@ -123,12 +66,16 @@ CREATE TABLE hr_schema.staff (
                                  created_by        VARCHAR(50),       -- userId / staffCode / system
                                  created_by_role   VARCHAR(30),       -- HEAD_TEACHER, ADMIN, SYSTEM
                                  updated_by        VARCHAR(50),
-                                 source            VARCHAR(30)         -- WEB, MOBILE, SYSTEM, BATCH
-
-                                UNIQUE (staff_code, school_code, is_deleted)
-
+                                 source            VARCHAR(30)        -- WEB, MOBILE, SYSTEM, BATCH
 
 );
+
+CREATE INDEX idx_staff_id
+    ON hr_schema.staff(staff_id)
+    WHERE is_deleted = FALSE;
+CREATE INDEX idx_staff_code_school_code
+    ON hr_schema.staff(staff_code, school_code)
+    WHERE is_deleted = FALSE;
 
 -- 2. STAFF_ACADEMIC_QUALIFICATIONS
 CREATE TABLE hr_schema.staff_academic_qualifications (
@@ -136,22 +83,7 @@ CREATE TABLE hr_schema.staff_academic_qualifications (
                                                          staff_id BIGINT NOT NULL REFERENCES hr_schema.staff(staff_id) ON DELETE CASCADE,
 
     -- Standardized Qualification Codes (Based on your form)
-                                                         qualification_level VARCHAR(30) CHECK (qualification_level IN (
-                                                                                                                        'BELOW_SSCE',
-                                                                                                                        'SSCE_WASC',
-                                                                                                                        'OND_DIPLOMA',
-                                                                                                                        'NCE',
-                                                                                                                        'DEGREE_HND_GRADUATE',
-                                                                                                                        'PGDE',
-                                                                                                                        'B_ED',
-                                                                                                                        'M_ED',
-                                                                                                                        'GRADE_II',
-                                                                                                                        'BA_ED',
-                                                                                                                        'BSC_HND',
-                                                                                                                        'BSC_ED',
-                                                                                                                        'PHD_MASTERS',
-                                                                                                                        'OTHER_DEGREE_GRADUATE'
-                                                             )),
+                                                         qualification_level VARCHAR(30),
 
                                                          qualification_name VARCHAR(200) NOT NULL,
                                                          institution VARCHAR(255),
@@ -168,35 +100,20 @@ CREATE TABLE hr_schema.staff_academic_qualifications (
                                                          updated_by        VARCHAR(50),
                                                          source            VARCHAR(30)         -- WEB, MOBILE, SYSTEM, BATCH
 
-
-                                                        UNIQUE(staff_id, qualification_level, year_obtained, deleted_at)
 );
+
+CREATE INDEX idx_staff_academic_qualifications
+    ON hr_schema.staff_academic_qualifications
+        (staff_id, qualification_level, year_obtained)
+    Where is_deleted = false;
 
 -- 3. STAFF_TEACHING_QUALIFICATIONS
 CREATE TABLE hr_schema.staff_teaching_qualifications (
                                                          teaching_qualification_id BIGSERIAL PRIMARY KEY,
                                                          staff_id BIGINT NOT NULL REFERENCES hr_schema.staff(staff_id) ON DELETE CASCADE,
 
-                                                         teaching_qualification VARCHAR(30) NOT NULL CHECK (teaching_qualification IN (
-                                                                                                                              'NCE',
-                                                                                                                              'PGDE',
-                                                                                                                              'B_ED_EQUIVALENT',
-                                                                                                                              'M_ED_EQUIVALENT',
-                                                                                                                              'GRADE_I_EQUIVALENT',
-                                                                                                                              'GRADE_II_EQUIVALENT',
-                                                                                                                              'NONE'
-                                                             )),
-                                                         subject_of_qualification VARCHAR(30) CHECK (subject_of_qualification IN (
-                                                                                                                                  'GENERAL_PRIMARY',
-                                                                                                                                  'ENGLISH',
-                                                                                                                                  'MATHEMATICS',
-                                                                                                                                  'SOCIAL_STUDIES',
-                                                                                                                                  'BASIC_SCIENCE',
-                                                                                                                                  'HAUSA_IGBO_YORUBA',
-                                                                                                                                  'CARE_GIVING',
-                                                                                                                                  'OTHER',
-                                                                                                                                  'NONE'
-                                                             )),
+                                                         teaching_qualification VARCHAR(30) NOT NULL,
+                                                         subject_of_qualification VARCHAR(30),
 
                                                          institution VARCHAR(255),
                                                          year_obtained INTEGER,
@@ -211,8 +128,13 @@ CREATE TABLE hr_schema.staff_teaching_qualifications (
                                                          updated_by        VARCHAR(50),
                                                          source            VARCHAR(30)         -- WEB, MOBILE, SYSTEM, BATCH
 
-                                                        UNIQUE(staff_id, teaching_qualification, subject_of_qualification, deleted_at)
 );
+
+
+CREATE INDEX idx_staff_teaching_qualifications
+    ON hr_schema.staff_teaching_qualifications (staff_id,
+                                                teaching_qualification, subject_of_qualification)
+    where is_deleted = false;
 
 -- 4. STAFF_SUBJECT_SPECIALIZATIONS
 CREATE TABLE hr_schema.staff_subject_specializations (
@@ -226,7 +148,7 @@ CREATE TABLE hr_schema.staff_subject_specializations (
                                                          is_main_teaching_subject BOOLEAN DEFAULT FALSE, -- Main subject taught
 
                                                          years_experience_subject INTEGER DEFAULT 0,
-                                                         proficiency_level VARCHAR(20) CHECK (proficiency_level IN ('BEGINNER', 'INTERMEDIATE', 'ADVANCED', 'EXPERT')),
+                                                         proficiency_level VARCHAR(20),
                                                          is_deleted BOOLEAN DEFAULT FALSE,
                                                          deleted_at TIMESTAMPTZ DEFAULT NULL,
                                                          updated_at TIMESTAMPTZ DEFAULT NOW(),
@@ -237,9 +159,12 @@ CREATE TABLE hr_schema.staff_subject_specializations (
                                                          updated_by        VARCHAR(50),
                                                          source            VARCHAR(30)         -- WEB, MOBILE, SYSTEM, BATCH
 
-
-                                                             UNIQUE(staff_id, subject_code, deleted_at)
 );
+
+
+CREATE INDEX idx_staff_subject_specializations_staff_id_subject_code
+    ON hr_schema.staff_subject_specializations(staff_id, subject_code)
+    Where is_deleted = false;
 
 -- 5. STAFF_ATTENDANCE (Daily attendance tracking)
 CREATE TABLE hr_schema.staff_attendance (
@@ -250,26 +175,12 @@ CREATE TABLE hr_schema.staff_attendance (
                                             attendance_date DATE NOT NULL DEFAULT NOW(),
                                             check_in_time TIMESTAMPTZ,
                                             check_out_time TIMESTAMPTZ,
-                                            attendance_status VARCHAR(20) CHECK (attendance_status IN ('PRESENT',
-                                                                                                       'ABSENT',
-                                                                                                       'LATE',
-                                                                                                       'LEAVE',
-                                                                                                       'SICK_LEAVE',
-                                                                                                       'ANNUAL_LEAVE',
-                                                                                                       'MATERNITY_LEAVE',
-                                                                                                       'STUDY_LEAVE',
-                                                                                                       'OTHER_LEAVE'
-                                                )),
-
+                                            attendance_status VARCHAR(20),
                                             late_reason TEXT,
                                             notes TEXT,
                                             recorded_by BIGINT, -- Staff ID who recorded
                                             recorded_at TIMESTAMPTZ DEFAULT NOW(),
-                                            absence_duration VARCHAR(20)
-                                                CHECK (absence_duration IN (
-                                                                            'LESS_THAN_ONE_MONTH',
-                                                                            'MORE_THAN_ONE_MONTH'
-                                                    )),
+                                            absence_duration VARCHAR(20),
                                             check_in_method VARCHAR(20),
                                             is_physical_confirmed BOOLEAN NOT NULL DEFAULT FALSE,
                                             is_deleted BOOLEAN DEFAULT FALSE,
@@ -277,18 +188,21 @@ CREATE TABLE hr_schema.staff_attendance (
                                             updated_at TIMESTAMPTZ DEFAULT NOW(),
                                             confirmed_at TIMESTAMPTZ DEFAULT NULL,
                                             confirmed_by VARCHAR,
-                                            finalized_at TIMESTAMPTZ NULL
+                                            finalized_at TIMESTAMPTZ NULL,
 
                                             created_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
                                             created_by        VARCHAR(50),       -- userId / staffCode / system
                                             confirmed_by_role   VARCHAR(30),       -- HEAD_TEACHER, ADMIN, SYSTEM
                                             updated_by        VARCHAR(50),
-                                            source            VARCHAR(30)         -- WEB, MOBILE, SYSTEM, BATCH
+                                            source            VARCHAR(30),        -- WEB, MOBILE, SYSTEM, BATCH
                                             CONSTRAINT check_present_has_checkin CHECK (
                                                 attendance_status != 'PRESENT'
-                                                OR check_in_time IS NOT NULL),
-                                            UNIQUE(staff_id, attendance_date, deleted_at)
+                                                OR check_in_time IS NOT NULL)
+
 );
+CREATE INDEX idx_staff_attendance_staff_id_attendance_date
+    ON hr_schema.staff_attendance(staff_id, attendance_date)
+    Where is_deleted = false;
 
 -- 6. TEXTBOOK_INVENTORY
 CREATE TABLE hr_schema.textbook_inventory (
@@ -300,28 +214,9 @@ CREATE TABLE hr_schema.textbook_inventory (
                                               provided_by VARCHAR(50) CHECK (provided_by IN ('GOVERNMENT', 'SCHOOL', 'DONATION', 'OTHER')),
 
     -- Subject and Grade Level
-                                              subject_area VARCHAR(50) CHECK (subject_area IN (
-                                                                                               'ENGLISH',
-                                                                                               'MATHEMATICS',
-                                                                                               'SOCIAL_STUDIES',
-                                                                                               'BASIC_SCIENCE_TECHNOLOGY',
-                                                                                               'HAUSA',
-                                                                                               'IGBO',
-                                                                                               'YORUBA',
-                                                                                               'GENERAL'
-                                                  )),
+                                              subject_area VARCHAR(50),
 
-                                              grade_level VARCHAR(20) CHECK (grade_level IN (
-                                                                                             'PRE_PRIMARY',
-                                                                                             'PRY1',
-                                                                                             'PRY2',
-                                                                                             'PRY3',
-                                                                                             'PRY4',
-                                                                                             'PRY5',
-                                                                                             'PRY6',
-                                                                                             'ALL_LEVELS'
-                                                  )),
-
+                                              grade_level VARCHAR(20),
     -- Book Details
                                               title VARCHAR(255) NOT NULL,
                                               author VARCHAR(255),
@@ -373,8 +268,8 @@ CREATE TABLE hr_schema.textbook_issuance (
                                              actual_return_date DATE,
 
     -- Condition
-                                             issued_condition VARCHAR(20) CHECK (issued_condition IN ('NEW', 'GOOD', 'FAIR', 'POOR')),
-                                             returned_condition VARCHAR(20) CHECK (returned_condition IN ('NEW', 'GOOD', 'FAIR', 'POOR', 'DAMAGED', 'LOST')),
+                                             issued_condition VARCHAR(20),
+                                             returned_condition VARCHAR(20),
 
     -- Issued By
                                              issued_by_staff_id BIGINT,
@@ -383,13 +278,7 @@ CREATE TABLE hr_schema.textbook_issuance (
                                              notes TEXT,
 
     -- System Fields
-                                             issuance_status VARCHAR(20) DEFAULT 'ISSUED' CHECK (issuance_status IN (
-                                                                                                                     'ISSUED',
-                                                                                                                     'RETURNED',
-                                                                                                                     'OVERDUE',
-                                                                                                                     'LOST',
-                                                                                                                     'DAMAGED'
-                                                 )),
+                                             issuance_status VARCHAR(20) DEFAULT 'ISSUED',
                                              is_deleted BOOLEAN DEFAULT FALSE,
                                              deleted_at TIMESTAMPTZ DEFAULT NULL,
                                              updated_at TIMESTAMPTZ DEFAULT NOW(),
@@ -414,15 +303,7 @@ CREATE TABLE hr_schema.staff_assignments (
                                              subject_id BIGINT, -- Reference to academic_schema.subjects
 
     -- Role in this assignment
-                                             assignment_role VARCHAR(30) CHECK (assignment_role IN (
-                                                                                                    'FORM_TEACHER',
-                                                                                                    'SUBJECT_TEACHER',
-                                                                                                    'ASSISTANT_TEACHER',
-                                                                                                    'CAREGIVER',
-                                                                                                    'SUPERVISOR'
-                                                 )),
-
-    -- Period
+                                             assignment_role VARCHAR(30),
                                              academic_year VARCHAR(10),
                                              term_id BIGINT, -- Reference to academic_schema.academic_term
 
@@ -431,13 +312,7 @@ CREATE TABLE hr_schema.staff_assignments (
                                              schedule_time TIME,
 
     -- Status
-                                             assignment_status VARCHAR(20) DEFAULT 'ACTIVE' CHECK (assignment_status IN (
-                                                                                                                         'ACTIVE',
-                                                                                                                         'COMPLETED',
-                                                                                                                         'TRANSFERRED',
-                                                                                                                         'CANCELLED'
-                                                 )),
-
+                                             assignment_status VARCHAR(20) DEFAULT 'ACTIVE',
                                              start_date DATE,
                                              end_date DATE,
 
@@ -454,8 +329,10 @@ CREATE TABLE hr_schema.staff_assignments (
                                              source            VARCHAR(30)         -- WEB, MOBILE, SYSTEM, BATCH
 
 
-                                            UNIQUE(staff_id, class_id, subject_id, academic_year, deleted_at)
 );
+CREATE INDEX idx_staff_assignments_staff_id_class_id_subject_id_academic_year
+    ON hr_schema.staff_assignments(staff_id, class_id, subject_id, academic_year)
+    WHERE is_deleted = FALSE;
 
 -- 9. STAFF_SERVICE_HISTORY
 CREATE TABLE hr_schema.staff_service_history (
@@ -469,15 +346,7 @@ CREATE TABLE hr_schema.staff_service_history (
                                                  end_date DATE,
 
     -- Type of change
-                                                 change_type VARCHAR(20) CHECK (change_type IN (
-                                                                                                'APPOINTMENT',
-                                                                                                'PROMOTION',
-                                                                                                'TRANSFER',
-                                                                                                'DEPLOYMENT',
-                                                                                                'RESIGNATION',
-                                                                                                'RETIREMENT',
-                                                                                                'TERMINATION'
-                                                     )),
+                                                 change_type VARCHAR(20),
 
     -- Details
                                                  previous_position VARCHAR(100),
@@ -510,19 +379,8 @@ CREATE TABLE hr_schema.hr_reports_config (
                                              report_id BIGSERIAL PRIMARY KEY,
                                              school_id BIGINT NOT NULL,
                                              school_code VARCHAR(100) NOT NULL,
-                                             report_type VARCHAR(50) CHECK (report_type IN (
-                                                                                            'STAFF_LIST',
-                                                                                            'QUALIFICATION_SUMMARY',
-                                                                                            'TEXTBOOK_INVENTORY',
-                                                                                            'PUPIL_TEACHER_RATIO',
-                                                                                            'CAREGIVER_SUMMARY',
-                                                                                            'STAFF_DEPLOYMENT',
-                                                                                            'GOVERNMENT_REPORT'
-                                                 )),
-                                             report_format VARCHAR(20) CHECK (report_format IN (
-                                                                                                'PDF',
-                                                                                                'EXCEL'
-                                                                                               )),
+                                             report_type VARCHAR(50),
+                                             report_format VARCHAR(20),
 
     -- Report Parameters
                                              academic_year VARCHAR(10),
@@ -533,12 +391,7 @@ CREATE TABLE hr_schema.hr_reports_config (
                                              report_data JSONB,
 
     -- Status
-                                             generation_status VARCHAR(20) DEFAULT 'PENDING' CHECK (generation_status IN (
-                                                                                                                          'PENDING',
-                                                                                                                          'GENERATING',
-                                                                                                                          'COMPLETED',
-                                                                                                                          'FAILED'
-                                                 )),
+                                             generation_status VARCHAR(20) DEFAULT 'PENDING',
 
                                              file_path TEXT,
                                              file_size BIGINT,
@@ -559,24 +412,10 @@ CREATE TABLE hr_schema.textbook_inventory_transactions (
                                                            transaction_id BIGSERIAL PRIMARY KEY,
                                                            textbook_id BIGINT NOT NULL REFERENCES hr_schema.textbook_inventory(textbook_id),
 
-                                                           transaction_type VARCHAR(30) NOT NULL CHECK (transaction_type IN (
-                                                                                                                             'RECEIVE',
-                                                                                                                             'ISSUE',
-                                                                                                                             'RETURN',
-                                                                                                                             'DAMAGE',
-                                                                                                                             'LOSS',
-                                                                                                                             'ADJUSTMENT'
-                                                               )),
-
+                                                           transaction_type VARCHAR(30) NOT NULL,
                                                            quantity INTEGER NOT NULL CHECK (quantity > 0),
 
-                                                           issued_to_type VARCHAR(20) CHECK (issued_to_type IN (
-                                                                                                                'STUDENT',
-                                                                                                                'TEACHER',
-                                                                                                                'CAREGIVER',
-                                                                                                                'CLASS',
-                                                                                                                'STORE'
-                                                               )),
+                                                           issued_to_type VARCHAR(20),
 
                                                            issued_to_code VARCHAR,
                                                            issued_to_name VARCHAR(255),
@@ -616,7 +455,7 @@ CREATE TABLE hr_schema.outbox_events (
 );
 
 
-CREATE TABLE academic_schema.school_attendance_policy (
+CREATE TABLE hr_schema.school_attendance_policy (
                                                           policy_id BIGSERIAL PRIMARY KEY,
 
                                                           school_id BIGINT NOT NULL,
@@ -631,12 +470,16 @@ CREATE TABLE academic_schema.school_attendance_policy (
                                                           effective_to DATE,
 
                                                           status VARCHAR(20) DEFAULT 'ACTIVE',
-
+                                                          is_deleted BOOLEAN DEFAULT FALSE,
+                                                          deleted_at TIMESTAMPTZ DEFAULT NULL,
                                                           created_at TIMESTAMPTZ DEFAULT NOW(),
-                                                          updated_at TIMESTAMPTZ DEFAULT NOW(),
+                                                          updated_at TIMESTAMPTZ DEFAULT NOW()
 
-                                                          UNIQUE (school_id, effective_from)
+
 );
 
+CREATE INDEX idx_school_attendance_policy_school_id_effective_from
+    ON hr_schema.school_attendance_policy (school_id,  effective_from)
+    WHERE is_deleted = FALSE;
 
 

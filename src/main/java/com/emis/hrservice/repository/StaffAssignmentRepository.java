@@ -22,7 +22,15 @@ public interface StaffAssignmentRepository extends ReactiveCrudRepository<StaffA
     Flux<StaffAssignment> findBySchoolIdAndAssignmentStatusAndIsDeletedFalse(
             Long schoolId, 
             AssignmentStatus assignmentStatus);
-    
+
+    @Query("""
+        SELECT * FROM hr_schema.staff_assignments
+        WHERE staff_id = $1
+        AND class_id = $2
+        AND subject_id = $3
+        AND academic_year = $4
+        AND is_deleted = false
+    """)
     Mono<StaffAssignment> findByStaffIdAndClassIdAndSubjectIdAndAcademicYearAndIsDeletedFalse(
             Long staffId, 
             Long classId,

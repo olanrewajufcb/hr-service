@@ -15,5 +15,6 @@ public record CreateStaffRequest(
         EmploymentType employmentType,
         SalarySource salarySource,
         LocalDate dateOfFirstAppointment,
-        String mainSubjectTaught
+        String mainSubjectTaught,
+        String lga
 ) {}

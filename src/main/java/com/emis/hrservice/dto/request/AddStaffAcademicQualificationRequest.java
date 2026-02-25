@@ -9,7 +9,7 @@ public record AddStaffAcademicQualificationRequest(
         @NotNull QualificationLevel qualificationLevel,
         @NotBlank String qualificationName,
         String institution,
-        @NotBlank
-        @NotNull @Min(1900) Integer yearObtained,
+        @NotNull @Min(1900)
+        Integer yearObtained,
         String subjectArea
 ) {}

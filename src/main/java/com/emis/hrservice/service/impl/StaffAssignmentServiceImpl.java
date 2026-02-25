@@ -49,6 +49,7 @@ public class StaffAssignmentServiceImpl implements StaffAssignmentService {
                 .flatMap(staff ->
                         validateTeachingEligibility(staff, request)
                                 .then(Mono.defer(() -> createAssignment(staff, request)
+                                        //TODO: idempotency issues to be fixed here. prevent kafka messages being duplicated
                                 .flatMap(assignment ->
                                         writeOutboxEvent(assignment, staff, request, requestId)
                                                 .thenReturn(assignment)
@@ -67,11 +68,9 @@ public class StaffAssignmentServiceImpl implements StaffAssignmentService {
     }
 
     @Override
-    public Flux<StaffAssignmentResponse> viewStaffAssignmentById(Long staffId) {
-        return staffRepository.findById(staffId)
-                .switchIfEmpty(Mono.error(new ResourceNotFoundException("Staff not found")))
-                .flatMapMany(staff -> staffAssignmentRepository.findByStaffIdAndIsDeletedFalse(staff.getStaffId())
-                        .map(StaffAssignmentResponse::from));
+    public Mono<StaffAssignmentResponse> viewStaffAssignmentById(Long assignmentId) {
+        return staffAssignmentRepository.findById(assignmentId)
+                        .map(StaffAssignmentResponse::from);
     }
 
     private Mono<Staff> validateTeachingEligibility(
@@ -150,12 +149,18 @@ public class StaffAssignmentServiceImpl implements StaffAssignmentService {
                         request.classId(),
                         request.subjectId(),
                         request.academicYear())
+                .flatMap(assignment ->
+                        Mono.<StaffAssignment>error(new ValidationException(
+                               String.format("Staff is already assigned to this section/subject %s for the academic year %s",
+                                       request.sectionId(), request.academicYear())))
+                )
                 .switchIfEmpty(addNewStaffAssignment(staff, assignmentMapper.toEntity(request)));
     }
     private Mono<StaffAssignment> addNewStaffAssignment(
             Staff staff, StaffAssignment assignment) {
 
         assignment.setStaffId(staff.getStaffId());
+        assignment.setSchoolId(staff.getSchoolId());
         return staffAssignmentRepository.save(assignment);
     }
 

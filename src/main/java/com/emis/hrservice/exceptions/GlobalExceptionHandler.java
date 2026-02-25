@@ -231,7 +231,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(BadRequestException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public Map<String, Object> handleValidationException(BadRequestException ex) {
+    public Map<String, Object> handleInvalidRequestException(BadRequestException ex) {
         log.error("School already exists: {}", ex.getMessage());
 
         Map<String, Object> response = new HashMap<>();
@@ -247,6 +247,19 @@ public class GlobalExceptionHandler {
             response.put("rejectedValue", ex.getRejectedValue());
         }
 
+        return response;
+    }
+
+    @ExceptionHandler(ValidationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, Object> handleValidationException(ValidationException ex) {
+        log.error("School already exists: {}", ex.getMessage());
+
+        Map<String, Object> response = new HashMap<>();
+        response.put(TIMESTAMP, LocalDateTime.now());
+        response.put(STATUS, "Invalid Request");
+        response.put(ERROR, BAD_REQUEST);
+        response.put(MESSAGE, ex.getMessage());
         return response;
     }
 }

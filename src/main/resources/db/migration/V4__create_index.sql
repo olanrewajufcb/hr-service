@@ -1,4 +1,8 @@
--- Create indexes for performance
+
+
+
+
+    -- Create indexes for performance
 CREATE INDEX idx_staff_school ON hr_schema.staff(school_id);
 CREATE INDEX idx_staff_category ON hr_schema.staff(staff_category);
 CREATE INDEX idx_staff_role ON hr_schema.staff(staff_role);

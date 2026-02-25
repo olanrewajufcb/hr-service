@@ -12,6 +12,6 @@ public interface StaffAssignmentService {
 
     Flux<StaffAssignmentResponse> viewStaffAssignments(String staffCode, String schoolCode);
 
-    Flux<StaffAssignmentResponse> viewStaffAssignmentById(Long staffId);
+    Mono<StaffAssignmentResponse> viewStaffAssignmentById(Long assignmentId);
 
 }
