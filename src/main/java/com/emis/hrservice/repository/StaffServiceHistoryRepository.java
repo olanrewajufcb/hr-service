@@ -14,17 +14,17 @@ import java.time.LocalDate;
 public interface StaffServiceHistoryRepository extends ReactiveCrudRepository<StaffServiceHistory, Long> {
 
     Flux<StaffServiceHistory> findByStaffId(Long staffId);
-    
-    Flux<StaffServiceHistory> findByStaffIdAndIsDeletedFalse(Long staffId);
-    
-    Flux<StaffServiceHistory> findBySchoolIdAndChangeTypeAndIsDeletedFalse(
-            Long schoolId, 
-            ChangeType changeType);
-    
-    Flux<StaffServiceHistory> findByStaffIdAndStartDateBetweenAndIsDeletedFalse(
-            Long staffId, 
-            LocalDate startDate, 
-            LocalDate endDate);
+
+    @Query("""
+        UPDATE hr_schema.staff_service_history
+        SET end_date = CURRENT_TIMESTAMP, 
+            is_deleted = TRUE,
+            deleted_at = NOW()
+        WHERE staff_id = $1
+        AND is_deleted = false
+        AND end_date IS NULL
+    """)
+    Mono<Void> updateStaffServiceHistory(Long staffId);
     
     @Query("""
         SELECT * FROM hr_schema.staff_service_history 
@@ -43,11 +43,11 @@ public interface StaffServiceHistoryRepository extends ReactiveCrudRepository<St
         SELECT EXISTS (
             SELECT 1 FROM hr_schema.staff_service_history
             WHERE staff_id = $1
-            AND school_code = $2
+            AND school_id = $2
             AND start_date = $3
             AND change_type = 'TRANSFER'
             AND is_deleted = false
         )
     """)
-  Mono<Boolean> existsActiveTransfer(Long staffId, String schoolCode, LocalDate startDate);
+  Mono<Boolean> existsActiveTransfer(Long staffId, Long schoolId, LocalDate startDate);
 }

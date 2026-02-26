@@ -80,24 +80,38 @@ public class StaffAttendanceServiceImpl implements StaffAttendanceService {
         if (request.confirmerStaffCode().equals(request.staffCode())){
             return Mono.error(new ValidationException("Staff can not confirm their own attendance"));
         }
-        return Mono.deferContextual(ctx -> {
-            AuditContext audit = ctx.get("audit");
+    return Mono.deferContextual(
+            ctx -> {
+              AuditContext audit = ctx.get("audit");
 
-                return staffRepository.findByStaffCodeAndSchoolCodeAndIsDeletedFalse(request.confirmerStaffCode(), schoolCode)
-                .switchIfEmpty(Mono.error(new AuthorizationException("Confirmer not found")))
-                .flatMap(confirmer -> {
-                    // TODO: check confirmer role e.g. HEAD_TEACHER or SUPERVISOR
-                    return staffRepository.findByStaffCodeAndSchoolCodeAndIsDeletedFalse(request.staffCode(), schoolCode)
-                            .switchIfEmpty(Mono.error(new ResourceNotFoundException("Target staff not found")))
-                            .flatMap(targetStaff ->
-                                    staffAttendanceRepository.findByStaffIdAndSchoolIdAndAttendanceDateAndIsDeletedFalse(
-                                                    targetStaff.getStaffId(), targetStaff.getSchoolId(), request.attendanceDate())
-                                            .switchIfEmpty(Mono.error(new ValidationException(STAFF_NOT_CHECKED_IN)))
-                                            .flatMap(attendance -> confirmAttendance(attendance, request, audit))
-                            );
-                });
-   })
-                .map(StaffAttendanceResponse::from);
+              return staffRepository
+                  .findByStaffCodeAndSchoolCodeAndIsDeletedFalse(
+                      request.confirmerStaffCode(), schoolCode)
+                  .switchIfEmpty(Mono.error(new ValidationException("Confirmer not found")))
+                  .flatMap(
+                      confirmer -> {
+                        // TODO: check confirmer role e.g. HEAD_TEACHER or SUPERVISOR
+                        return staffRepository
+                            .findByStaffCodeAndSchoolCodeAndIsDeletedFalse(
+                                request.staffCode(), schoolCode)
+                            .switchIfEmpty(
+                                Mono.error(new ResourceNotFoundException("Target staff not found")))
+                            .flatMap(
+                                targetStaff ->
+                                    staffAttendanceRepository
+                                        .findByStaffIdAndSchoolIdAndAttendanceDateAndIsDeletedFalse(
+                                            targetStaff.getStaffId(),
+                                            targetStaff.getSchoolId(),
+                                            request.attendanceDate())
+                                        .switchIfEmpty(
+                                            Mono.error(
+                                                new ValidationException(STAFF_NOT_CHECKED_IN)))
+                                        .flatMap(
+                                            attendance ->
+                                                confirmAttendance(attendance, request, audit)));
+                      });
+            })
+        .map(StaffAttendanceResponse::from);
     }
 
     @Override
@@ -166,7 +180,7 @@ public class StaffAttendanceServiceImpl implements StaffAttendanceService {
                         .attendanceId(attendance.getAttendanceId())
                         .previousStatus(attendance.getAttendanceStatus())
                         .newStatus(item.status().name())
-                        .changedBy(attendance.getConfirmedBy())
+                        .changedBy(1L) //to be changed with auth
                         .changedAt(LocalDateTime.now())
                         .reason(item.notes())
                         .build()
@@ -177,7 +191,7 @@ public class StaffAttendanceServiceImpl implements StaffAttendanceService {
     //validate confirmer
     private Mono<Long> validateConfirmer(String confirmerStaffCode, String schoolCode) {
         return staffRepository.findByStaffCodeAndSchoolCodeAndIsDeletedFalse(confirmerStaffCode, schoolCode)
-                .switchIfEmpty(Mono.error(new AuthorizationException("Confirmer not found")))
+                .switchIfEmpty(Mono.error(new ValidationException("Confirmer not found")))
                 .map(Staff::getSchoolId);
     }
 
@@ -218,10 +232,11 @@ public class StaffAttendanceServiceImpl implements StaffAttendanceService {
                                 attendance.setAttendanceStatus(AttendanceStatus.CHECKED_IN.name());
                                 attendance.setStaffId(staff.getStaffId());
                                 attendance.setStaffCode(request.staffCode());
+                                attendance.setSchoolId(staff.getSchoolId());
                                 attendance.setCheckInTime(request.checkInTime());
                                 attendance.setAttendanceDate(request.attendanceDate());
-                                attendance.setCheckInBy(audit.userId());
-                                attendance.setCheckedInAt(LocalDate.now());
+//                                attendance.setCheckInBy(audit.userId());
+//                                attendance.setCheckedInAt(LocalDate.now());
                                 attendance.setSource(audit.source());
 
                                 String newStatus = request.checkInTime().isAfter(policy.getCheckInTime())
@@ -256,7 +271,7 @@ public class StaffAttendanceServiceImpl implements StaffAttendanceService {
       if (AttendanceStatus.PRESENT.name().equals(attendance.getAttendanceStatus())) {
           return Mono.error(new ResourceAlreadyExistsException("Attendance already confirmed"));
       }
-      if (attendance.getIsPhysicallyConfirmed()){
+      if (Boolean.TRUE.equals(attendance.getIsPhysicallyConfirmed())){
           return Mono.error(new ResourceAlreadyExistsException("Attendance already physically confirmed"));
       }
       String previousStatus = attendance.getAttendanceStatus();
@@ -265,7 +280,7 @@ public class StaffAttendanceServiceImpl implements StaffAttendanceService {
                       : AttendanceStatus.PRESENT.name();
       attendance.setIsPhysicallyConfirmed(request.isPhysicallyConfirmed());
       attendance.setAttendanceStatus(newStatus);
-      attendance.setConfirmedBy(audit.userId());
+      attendance.setConfirmedBy("Logged in user");
       attendance.setConfirmedByRole(audit.role());
       attendance.setConfirmedAt(LocalDateTime.now());
       attendance.setNotes(request.notes());
@@ -335,7 +350,7 @@ public class StaffAttendanceServiceImpl implements StaffAttendanceService {
         return staffAttendanceRepository.save(att)
                 .then(saveAttendanceAudit(att, previous,
                         att.getAttendanceStatus(),
-                        new AuditContext("",  "System",
+                        new AuditContext(1L,  "System",
                                 "attendance finalized by the system"), ""));
     }
     private Mono<Void> createAbsentAttendance(Staff staff, LocalDate date) {
@@ -349,7 +364,7 @@ public class StaffAttendanceServiceImpl implements StaffAttendanceService {
                 .build();
         return staffAttendanceRepository.save(absent)
                 .then(saveAttendanceAudit(absent, "Absent", absent.getAttendanceStatus(),
-                        new AuditContext("",  "System","system"), ""));
+                        new AuditContext(1L,  "System","system"), ""));
     }
 
     @Scheduled(cron = "0 0 12 * * ?")

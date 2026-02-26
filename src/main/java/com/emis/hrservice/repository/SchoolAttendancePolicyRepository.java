@@ -10,6 +10,15 @@ public interface SchoolAttendancePolicyRepository extends ReactiveCrudRepository
 
     Mono<AttendancePolicy> findBySchoolCode(String schoolCode);
 
-    @Query("SELECT * FROM school_attendance_policy WHERE status = 'active' AND is_deleted = FALSE")
+    @Query("SELECT * FROM hr_schema.school_attendance_policy WHERE status = 'active' AND is_deleted = FALSE")
     Flux<AttendancePolicy> findAllActive();
+
+  @Query(
+"""
+    SELECT  * FROM  hr_schema.school_attendance_policy 
+    WHERE school_code = $1 
+      AND status = 'ACTIVE'
+    AND is_deleted = FALSE
+""")
+  Flux<AttendancePolicy> findBySchoolCodeAndStatus(String schoolCode);
 }

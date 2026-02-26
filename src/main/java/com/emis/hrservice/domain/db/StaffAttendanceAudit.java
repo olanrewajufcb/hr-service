@@ -19,7 +19,7 @@ public class StaffAttendanceAudit {
     private Long attendanceId;
     private String previousStatus;
     private String newStatus;
-    private String changedBy;
+    private Long changedBy;
     private String reason;
     private LocalDateTime changedAt;
 }

@@ -19,6 +19,7 @@ public class AttendancePolicy {
     @Id
     Long policyId;
     String schoolCode;
+    Long schoolId;
     LocalTime checkInTime;
     String status;
     LocalTime cutOffTime;

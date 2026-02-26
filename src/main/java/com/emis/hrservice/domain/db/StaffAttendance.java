@@ -48,13 +48,14 @@ public class StaffAttendance {
     @Column("notes")
     private String notes;
 
+    @Column("is_physical_confirmed")
     private Boolean isPhysicallyConfirmed;
 
     @Column("recorded_by")
     private Long recordedBy;
 
-    private String checkInBy;
-    private LocalDate checkedInAt;
+//    private String checkInBy;
+//    private LocalDate checkedInAt;
     private String source;
     private String confirmedBy;
     private LocalDateTime finalizedAt;

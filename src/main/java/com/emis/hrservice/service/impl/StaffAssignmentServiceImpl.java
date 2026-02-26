@@ -11,6 +11,7 @@ import com.emis.hrservice.events.outbox.OutboxEvent;
 import com.emis.hrservice.events.outbox.OutboxEventRepository;
 import com.emis.hrservice.events.outbox.StaffAssignedEvent;
 import com.emis.hrservice.exceptions.*;
+import com.emis.hrservice.helper.AcademicServiceHelper;
 import com.emis.hrservice.mapper.StaffAssignmentMapper;
 import com.emis.hrservice.repository.StaffAssignmentRepository;
 import com.emis.hrservice.repository.StaffRepository;
@@ -26,6 +27,8 @@ import reactor.core.publisher.Mono;
 
 import java.time.Instant;
 import java.util.UUID;
+
+import static com.emis.hrservice.helper.AcademicServiceHelper.generateDeterministicEventId;
 
 @Service
 @RequiredArgsConstructor
@@ -49,7 +52,6 @@ public class StaffAssignmentServiceImpl implements StaffAssignmentService {
                 .flatMap(staff ->
                         validateTeachingEligibility(staff, request)
                                 .then(Mono.defer(() -> createAssignment(staff, request)
-                                        //TODO: idempotency issues to be fixed here. prevent kafka messages being duplicated
                                 .flatMap(assignment ->
                                         writeOutboxEvent(assignment, staff, request, requestId)
                                                 .thenReturn(assignment)
@@ -116,9 +118,16 @@ public class StaffAssignmentServiceImpl implements StaffAssignmentService {
                         .assignmentRole(request.assignmentRole().name())
                         .build();
 
+        String[] components = {
+                request.academicYear(),
+                request.assignmentRole().toString(),
+                request.subjectId().toString()
+        };
+        UUID eventId = generateDeterministicEventId(correlationId, components);
+
         DomainEvent<StaffAssignedEvent> event =
                 DomainEvent.<StaffAssignedEvent>builder()
-                        .eventId(UUID.randomUUID())
+                        .eventId(eventId)
                         .eventType("STAFF_ASSIGNED_TO_CLASS")
                         .eventVersion(1)
                         .occurredAt(Instant.now())

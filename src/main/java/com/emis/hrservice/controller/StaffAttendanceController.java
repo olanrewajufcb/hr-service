@@ -35,7 +35,7 @@ public class StaffAttendanceController {
     ) {
         String requestId = UUID.randomUUID().toString();
         return staffAttendanceService.checkInStaff(request, requestId)
-                .contextWrite(ctx -> ctx.put("audit", new AuditContext("1234L", "Staff", "WEB")));
+                .contextWrite(ctx -> ctx.put("audit", new AuditContext(1L, "Staff", "WEB")));
     }
 
     @Operation(summary = "Mark a staff member attendance")
@@ -47,7 +47,7 @@ public class StaffAttendanceController {
     ) {
         String requestId = UUID.randomUUID().toString();
         return staffAttendanceService.markStaffAttendance(request, schoolCode, requestId)
-                .contextWrite(ctx -> ctx.put("audit", new AuditContext("1234L", "Head_Teacher", "WEB")));
+                .contextWrite(ctx -> ctx.put("audit", new AuditContext(1L, "Head_Teacher", "WEB")));
     }
 
     @Operation(summary = "Bulk confirmation of staff attendance at once")
@@ -59,6 +59,6 @@ public class StaffAttendanceController {
     ) {
         String requestId = UUID.randomUUID().toString();
         return staffAttendanceService.confirmBulkAttendance(request, schoolCode, requestId)
-                .contextWrite(ctx -> ctx.put("audit", new AuditContext("1234L", "Head_Teacher", "WEB")));
+                .contextWrite(ctx -> ctx.put("audit", new AuditContext(1L, "Head_Teacher", "WEB")));
     }
 }

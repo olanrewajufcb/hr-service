@@ -13,6 +13,7 @@ import com.emis.hrservice.events.outbox.StaffTransferredEvent;
 import com.emis.hrservice.exceptions.BadRequestException;
 import com.emis.hrservice.exceptions.ResourceNotFoundException;
 import com.emis.hrservice.exceptions.ValidationException;
+import com.emis.hrservice.helper.AcademicServiceHelper;
 import com.emis.hrservice.mapper.StaffTransferMapper;
 import com.emis.hrservice.repository.StaffRepository;
 import com.emis.hrservice.repository.StaffServiceHistoryRepository;
@@ -28,6 +29,8 @@ import reactor.core.publisher.Mono;
 
 import java.time.Instant;
 import java.util.UUID;
+
+import static com.emis.hrservice.helper.AcademicServiceHelper.generateDeterministicEventId;
 
 @Service
 @RequiredArgsConstructor
@@ -99,26 +102,33 @@ public class StaffTransferServiceImpl implements StaffTransferService {
         );
 
         history.setStaffId(staff.getStaffId());
+        history.setSchoolId(staff.getSchoolId());
         history.setFromSchoolId(staff.getSchoolId());
+        history.setToSchoolId(toSchoolId);
+        history.setPosition(history.getPosition());
+        history.setNewPosition(request.newPosition());
         history.setFromSchoolCode(request.fromSchoolCode());
         history.setToSchoolCode(request.toSchoolCode());
 
         return staffServiceHistoryRepository
                 .existsActiveTransfer(
                         staff.getStaffId(),
-                        request.toSchoolCode(),
+                        toSchoolId,
                         request.startDate()
                 )
                 .flatMap(exists -> {
-                    if (exists) {
+                    if (Boolean.TRUE.equals(exists)) {
                         return Mono.error(
                                 new BadRequestException(
                                         "Staff " + staff.getStaffCode() + " already has an active transfer"
                                 )
                         );
                     }
+                    return staffServiceHistoryRepository.updateStaffServiceHistory(
+                            staff.getStaffId()
+                    )
 
-                    return staffServiceHistoryRepository.save(history)
+                            .then(staffServiceHistoryRepository.save(history)
                             .flatMap(saved ->
                                     staffRepository
                                             .updateStaffSchool(
@@ -128,9 +138,8 @@ public class StaffTransferServiceImpl implements StaffTransferService {
                                                     request.startDate()
                                             )
                                             .thenReturn(saved)
-                            );
-                })
-                .as(transactionalOperator::transactional);
+                            ));
+                });
     }
 
     private Mono<Void> writeTransferOutboxEvent(
@@ -156,9 +165,19 @@ public class StaffTransferServiceImpl implements StaffTransferService {
                         .startDate(request.startDate())
                         .build();
 
+        String[] components = {
+                request.changeType().toString(),
+                request.newPosition(),
+                request.fromSchoolCode(),
+                request.toSchoolCode(),
+                request.startDate().toString(),
+                request.remarks() != null ? request.remarks() : ""
+        };
+        UUID eventId = generateDeterministicEventId(correlationId, components);
+
         DomainEvent<StaffTransferredEvent> event =
                 DomainEvent.<StaffTransferredEvent>builder()
-                        .eventId(UUID.randomUUID())
+                        .eventId(eventId)
                         .eventType("STAFF_TRANSFERRED")
                         .eventVersion(1)
                         .occurredAt(Instant.now())
@@ -181,4 +200,5 @@ public class StaffTransferServiceImpl implements StaffTransferService {
                         .build()
         ).then();
     }
+
 }

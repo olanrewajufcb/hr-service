@@ -1,7 +1,7 @@
 package com.emis.hrservice.dto.request;
 
 public record AuditContext(
-        String userId,
+        Long userId,
         String role,
         String source
 ) {}

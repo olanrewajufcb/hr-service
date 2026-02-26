@@ -19,28 +19,20 @@ public class StaffServiceHistory {
     @Id
     private Long historyId;
 
-    @Column("staff_id")
     private Long staffId;
 
-    @Column("school_id")
     private Long schoolId;
 
-    @Column("position")
     private String position;
 
-    @Column("start_date")
     private LocalDate startDate;
 
-    @Column("end_date")
     private LocalDate endDate;
 
-    @Column("change_type")
     private String changeType;
 
-    @Column("previous_position")
     private String previousPosition;
 
-    @Column("new_position")
     private String newPosition;
 
     @Column("from_school_id")
@@ -50,20 +42,14 @@ public class StaffServiceHistory {
     private Long toSchoolId;
     private String fromSchoolCode;
     private String toSchoolCode;
-    @Column("remarks")
     private String remarks;
 
-    @Column("documented_by")
     private Long documentedBy;
 
-    @Column("document_reference")
     private String documentReference;
 
-    @Column("is_deleted")
-    @Builder.Default
-    private Boolean isDeleted = false;
+    private Boolean isDeleted;
 
-    @Column("deleted_at")
     private LocalDateTime deletedAt;
 
     @CreatedDate
