@@ -70,10 +70,10 @@ CREATE TABLE hr_schema.staff (
 
 );
 
-CREATE INDEX idx_staff_id
+CREATE UNIQUE INDEX idx_staff_id
     ON hr_schema.staff(staff_id)
     WHERE is_deleted = FALSE;
-CREATE INDEX idx_staff_code_school_code
+CREATE UNIQUE INDEX idx_staff_code_school_code
     ON hr_schema.staff(staff_code, school_code)
     WHERE is_deleted = FALSE;
 
@@ -102,7 +102,7 @@ CREATE TABLE hr_schema.staff_academic_qualifications (
 
 );
 
-CREATE INDEX idx_staff_academic_qualifications
+CREATE UNIQUE INDEX idx_staff_academic_qualifications
     ON hr_schema.staff_academic_qualifications
         (staff_id, qualification_level, year_obtained)
     Where is_deleted = false;
@@ -131,7 +131,7 @@ CREATE TABLE hr_schema.staff_teaching_qualifications (
 );
 
 
-CREATE INDEX idx_staff_teaching_qualifications
+CREATE UNIQUE INDEX idx_staff_teaching_qualifications
     ON hr_schema.staff_teaching_qualifications (staff_id,
                                                 teaching_qualification, subject_of_qualification)
     where is_deleted = false;
@@ -162,7 +162,7 @@ CREATE TABLE hr_schema.staff_subject_specializations (
 );
 
 
-CREATE INDEX idx_staff_subject_specializations_staff_id_subject_code
+CREATE UNIQUE INDEX idx_staff_subject_specializations_staff_id_subject_code
     ON hr_schema.staff_subject_specializations(staff_id, subject_code)
     Where is_deleted = false;
 
@@ -173,8 +173,8 @@ CREATE TABLE hr_schema.staff_attendance (
                                             staff_code VARCHAR(50) NOT NULL, -- denormalized from staff.staff_code
                                             school_id BIGINT NOT NULL,
                                             attendance_date DATE NOT NULL DEFAULT NOW(),
-                                            check_in_time TIMESTAMPTZ,
-                                            check_out_time TIMESTAMPTZ,
+                                            check_in_time TIME,
+                                            check_out_time TIME,
                                             attendance_status VARCHAR(20),
                                             late_reason TEXT,
                                             notes TEXT,
@@ -200,7 +200,7 @@ CREATE TABLE hr_schema.staff_attendance (
                                                 OR check_in_time IS NOT NULL)
 
 );
-CREATE INDEX idx_staff_attendance_staff_id_attendance_date
+CREATE UNIQUE INDEX idx_staff_attendance_staff_id_attendance_date
     ON hr_schema.staff_attendance(staff_id, attendance_date)
     Where is_deleted = false;
 
@@ -330,9 +330,11 @@ CREATE TABLE hr_schema.staff_assignments (
 
 
 );
-CREATE INDEX idx_staff_assignments_staff_id_class_id_subject_id_academic_year
+CREATE UNIQUE INDEX idx_staff_assignments_staff_id_class_id_subject_id_academic_year
     ON hr_schema.staff_assignments(staff_id, class_id, subject_id, academic_year)
     WHERE is_deleted = FALSE;
+
+
 
 -- 9. STAFF_SERVICE_HISTORY
 CREATE TABLE hr_schema.staff_service_history (
@@ -478,7 +480,7 @@ CREATE TABLE hr_schema.school_attendance_policy (
 
 );
 
-CREATE INDEX idx_school_attendance_policy_school_id_effective_from
+CREATE UNIQUE INDEX idx_school_attendance_policy_school_id_effective_from
     ON hr_schema.school_attendance_policy (school_id,  effective_from)
     WHERE is_deleted = FALSE;
 

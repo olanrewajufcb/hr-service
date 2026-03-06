@@ -1,6 +1,8 @@
 package com.emis.hrservice.config;
 
 
+import com.emis.hrservice.enums.ResourceAction;
+import com.emis.hrservice.enums.UserRole;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -15,7 +17,7 @@ import org.springframework.validation.annotation.Validated;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.List;
+import java.util.*;
 
 @Configuration
 @Getter
@@ -77,6 +79,17 @@ public class ServiceConfigurationProperties {
         private LocalTime checkInTime;
         @NotNull
         private LocalTime cutOffTime;
+    }
+
+    @NotNull
+    private Map<ResourceAction, ActionPolicy> actions = new EnumMap<>(ResourceAction.class);
+
+
+    @Getter
+    @Setter
+    public static class ActionPolicy {
+        private final Set<UserRole> roles = EnumSet.noneOf(UserRole.class);
+        private final Set<String> serviceAuthorities = new HashSet<>();
     }
 
 }

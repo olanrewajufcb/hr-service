@@ -27,9 +27,10 @@ public class StaffTransferController {
     @PostMapping("/staff/{staffCode}/transfer")
     @ResponseStatus(HttpStatus.CREATED)
     public Mono<StaffTransferResponse> transferStaff(
+            @RequestHeader(required = false) String schoolCode,
             @PathVariable String staffCode,
             @RequestBody StaffTransferRequest request) {
-
+        log.info("Logging schoolCode {}", schoolCode);
         String requestId = UUID.randomUUID().toString();
         log.info(
                 "[{}] Transferring staff {} from {} to {}",
@@ -42,12 +43,13 @@ public class StaffTransferController {
     @Operation(summary = "Get staff service history")
     @GetMapping("/staff/{staffId}/service-history")
     public Flux<StaffTransferResponse> getStaffServiceHistory(
+            @RequestHeader(required = false) String schoolCode,
             @PathVariable Long staffId) {
 
         String requestId = UUID.randomUUID().toString();
         log.info(
                 "[{}] Getting staff service history for staff {}",
-                requestId, staffId
+                schoolCode, staffId
         );
         return staffTransferService.getStaffServiceHistory(staffId)
                 .contextWrite(ctx -> ctx.put("requestId", requestId));

@@ -2,6 +2,8 @@ package com.emis.hrservice.controller;
 
 import com.emis.hrservice.dto.request.AddStaffAcademicQualificationRequest;
 import com.emis.hrservice.dto.response.AddStaffAcademicQualificationResponse;
+import com.emis.hrservice.security.CanAccessRestrictedResource;
+import com.emis.hrservice.security.CanAccessStrictlyRestrictedResource;
 import com.emis.hrservice.service.StaffAcademicQualificationService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
@@ -28,12 +30,14 @@ import java.util.UUID;
 public class StaffAcademicQualificationController {
 
     private final StaffAcademicQualificationService staffAcademicQualificationService;
+
+    @CanAccessStrictlyRestrictedResource
     @Operation(summary = "Add a staff academic qualifications to the system")
     @PostMapping("/schools/{schoolCode}/staff/{staffCode}/academic-qualifications")
     @ResponseStatus(HttpStatus.CREATED)
     public Mono<AddStaffAcademicQualificationResponse> addStaffAcademicQualification(
-                                  @PathVariable String staffCode,
                                   @PathVariable String schoolCode,
+                                  @PathVariable String staffCode,
                                   @RequestBody @Valid AddStaffAcademicQualificationRequest request) {
 
         String requestId = UUID.randomUUID().toString();
@@ -42,12 +46,13 @@ public class StaffAcademicQualificationController {
 
     }
 
+    @CanAccessRestrictedResource
     @Operation(summary = "Retrieve a staff academic qualifications by staff code")
     @GetMapping("/schools/{schoolCode}/staff/{staffCode}/academic-qualifications")
     @ResponseStatus(HttpStatus.OK)
     public Mono<Page<AddStaffAcademicQualificationResponse>> retrieveStaffAcademicQualification(
-                                  @PathVariable String staffCode,
                                   @PathVariable String schoolCode,
+                                  @PathVariable String staffCode,
                                   @RequestParam(defaultValue = "0")
                                   @Min(value = 0, message = "Page number must be greater than or equal to 0")
                                   int page,

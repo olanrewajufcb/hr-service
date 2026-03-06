@@ -1,11 +1,9 @@
-package com.emis.hrservice.config;
+package com.emis.hrservice.config.converters;
 
 
 import java.util.ArrayList;
 import java.util.List;
 
-import com.emis.hrservice.config.converters.JsonNodeReadingConverter;
-import com.emis.hrservice.config.converters.JsonNodeWritingConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.r2dbc.convert.R2dbcCustomConversions;

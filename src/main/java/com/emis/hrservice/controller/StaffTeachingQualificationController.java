@@ -2,6 +2,7 @@ package com.emis.hrservice.controller;
 
 import com.emis.hrservice.dto.request.AddStaffTeachingQualificationRequest;
 import com.emis.hrservice.dto.response.StaffTeachingQualificationResponse;
+import com.emis.hrservice.security.CanAccessRestrictedResource;
 import com.emis.hrservice.service.StaffTeachingQualificationService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
@@ -27,12 +28,14 @@ import java.util.UUID;
 public class StaffTeachingQualificationController {
 
     private final StaffTeachingQualificationService teachingQualificationService;
+
+    @CanAccessRestrictedResource
     @Operation(summary = "Add a staff teaching qualifications to the system")
     @PostMapping("/schools/{schoolCode}/staff/{staffCode}/teachingc-qualifications")
     @ResponseStatus(HttpStatus.CREATED)
     public Mono<StaffTeachingQualificationResponse> addStaffTeachingQualification(
-            @PathVariable String staffCode,
             @PathVariable String schoolCode,
+            @PathVariable String staffCode,
             @RequestBody @Valid AddStaffTeachingQualificationRequest request) {
 
         String requestId = UUID.randomUUID().toString();
@@ -42,12 +45,13 @@ public class StaffTeachingQualificationController {
 
     }
 
+    @CanAccessRestrictedResource
     @Operation(summary = "Retrieve a staff teaching qualifications from the system")
     @GetMapping("/schools/{schoolCode}/staff/{staffCode}/teaching-qualifications")
     @ResponseStatus(HttpStatus.OK)
     public Mono<Page<StaffTeachingQualificationResponse>> retrieveStaffTeachingQualifications(
-            @PathVariable String staffCode,
             @PathVariable String schoolCode,
+            @PathVariable String staffCode,
             @RequestParam(defaultValue = "0")
             @Min(value = 0, message = "Page number must be greater than or equal to 0")
             int page,
@@ -64,20 +68,5 @@ public class StaffTeachingQualificationController {
                 .contextWrite(ctx -> ctx.put("requestId", requestId));
 
     }
-
-//    @Operation(summary = "Add subject specialization for a staff")
-//    @PostMapping("/schools/{schoolCode}/staff/{staffCode}/subject-specialization")
-//    @ResponseStatus(HttpStatus.CREATED)
-//    public Mono<StaffTeachingQualificationResponse> addSubjectSpecialization(
-//            @PathVariable String staffCode,
-//            @PathVariable String schoolCode,
-//            @RequestBody @Valid AddStaffTeachingQualificationRequest request) {
-//
-//        String requestId = UUID.randomUUID().toString();
-//        return teachingQualificationService.addStaffTeachingQualification(
-//                staffCode, schoolCode, request, requestId)
-//                .contextWrite(ctx -> ctx.put("requestId", requestId));
-//
-//    }
 
 }

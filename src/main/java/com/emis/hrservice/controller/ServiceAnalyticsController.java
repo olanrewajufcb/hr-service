@@ -2,6 +2,7 @@ package com.emis.hrservice.controller;
 
 import com.emis.hrservice.dto.response.DailyAttendanceAnalyticsResponse;
 import com.emis.hrservice.dto.response.PeriodicAttendanceAnalyticsResponse;
+import com.emis.hrservice.security.CanAccessRestrictedResource;
 import com.emis.hrservice.service.HrAnalyticsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -18,14 +19,15 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/v1/hr/analytics")
+@RequestMapping("/api/v1/hr")
 @RequiredArgsConstructor
 @Slf4j
 public class ServiceAnalyticsController {
 
     private final HrAnalyticsService analyticsService;
 
-    @GetMapping("/attendance/daily")
+    @CanAccessRestrictedResource
+    @GetMapping("/analytics/attendance/daily")
     @Operation(summary = "Get daily attendance")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "OK"),
@@ -41,7 +43,8 @@ public class ServiceAnalyticsController {
         return analyticsService.getDailyAttendanceAnalytics(schoolCode, attendanceDate, requestId);
     }
 
-    @GetMapping("/attendance/risk")
+    @CanAccessRestrictedResource
+    @GetMapping("/analytics/attendance/risk")
     @Operation(summary = "Get periodic attendance")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "OK"),

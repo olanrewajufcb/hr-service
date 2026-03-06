@@ -7,6 +7,7 @@ import com.emis.hrservice.dto.request.StaffCheckInRequest;
 import com.emis.hrservice.dto.response.BulkAttendanceConfirmationResponse;
 import com.emis.hrservice.dto.response.StaffAttendanceResponse;
 import com.emis.hrservice.dto.response.StaffCheckInResponse;
+import com.emis.hrservice.security.hasTeacherResource;
 import com.emis.hrservice.service.StaffAttendanceService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
@@ -27,17 +28,22 @@ import java.util.UUID;
 public class StaffAttendanceController {
 
     private final StaffAttendanceService staffAttendanceService;
+
+    @hasTeacherResource
     @Operation(summary = "Check in a staff member")
     @PostMapping("/attendance/check-in")
     @ResponseStatus(HttpStatus.CREATED)
     public Mono<StaffCheckInResponse> checkInStaff(
+            @RequestHeader(required = false) String schoolCode,
             @RequestBody @Valid StaffCheckInRequest request
     ) {
+        log.info("Checking in staff with schoolCode: {}", schoolCode);
         String requestId = UUID.randomUUID().toString();
         return staffAttendanceService.checkInStaff(request, requestId)
                 .contextWrite(ctx -> ctx.put("audit", new AuditContext(1L, "Staff", "WEB")));
     }
 
+    @hasTeacherResource
     @Operation(summary = "Mark a staff member attendance")
     @PostMapping("/schools/{schoolCode}/attendance/confirm")
     @ResponseStatus(HttpStatus.CREATED)
@@ -50,6 +56,7 @@ public class StaffAttendanceController {
                 .contextWrite(ctx -> ctx.put("audit", new AuditContext(1L, "Head_Teacher", "WEB")));
     }
 
+    @hasTeacherResource
     @Operation(summary = "Bulk confirmation of staff attendance at once")
     @PostMapping("/schools/{schoolCode}/attendance/confirm/bulk")
     @ResponseStatus(HttpStatus.CREATED)
