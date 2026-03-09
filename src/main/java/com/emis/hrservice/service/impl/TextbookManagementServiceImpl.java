@@ -48,9 +48,9 @@ public class TextbookManagementServiceImpl implements TextbookManagementService 
                                         .findBySchoolIdAndTitleAndSubjectAreaAndEditionAndGradeLevelAndIsDeletedFalse(
                                                 school.schoolId(),
                                                 request.title(),
-                                                request.subjectArea(),
+                                                request.subjectArea().name(),
                                                 request.edition(),
-                                                request.gradeLevel())
+                                                request.gradeLevel().name())
                                                 .switchIfEmpty(Mono.error(new ResourceAlreadyExistsException
                                                         ("Duplicate textbook detected but not found")))
                                                 .map(AddTextbookResponse::from))

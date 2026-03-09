@@ -8,16 +8,9 @@ import reactor.core.publisher.Mono;
 
 public interface StaffTeachingQualificationRepository extends ReactiveCrudRepository<StaffTeachingQualification, Long> {
 
-    Flux<StaffTeachingQualification> findByStaffId(Long staffId);
     
     Flux<StaffTeachingQualification> findByStaffIdAndIsDeletedFalse(Long staffId, int size, long offset);
-    
-    Mono<Boolean> existsByStaffIdAndTeachingQualificationAndIsDeletedFalse(
-            Long staffId, 
-            String teachingQualification);
-    
-    @Query("UPDATE hr_schema.staff_teaching_qualifications SET is_deleted = true, deleted_at = CURRENT_TIMESTAMP WHERE teaching_qualification_id = $1")
-    Mono<Void> softDelete(Long teachingQualificationId);
+
 
     Mono<StaffTeachingQualification> findByStaffIdAndTeachingQualificationAndSubjectOfQualificationAndIsDeletedFalse(
             Long staffId,

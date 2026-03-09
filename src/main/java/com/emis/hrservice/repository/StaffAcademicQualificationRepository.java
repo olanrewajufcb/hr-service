@@ -8,7 +8,6 @@ import reactor.core.publisher.Mono;
 
 public interface StaffAcademicQualificationRepository extends ReactiveCrudRepository<StaffAcademicQualification, Long> {
 
-    Flux<StaffAcademicQualification> findByStaffId(Long staffId);
 
     @Query("""
         SELECT * FROM hr_schema.staff_academic_qualifications saq
@@ -19,12 +18,6 @@ public interface StaffAcademicQualificationRepository extends ReactiveCrudReposi
     Flux<StaffAcademicQualification> findByStaffIdAndIsDeletedFalse(Long staffId, int size, long offset);
     
     Mono<Long> countByStaffIdAndIsDeletedFalse(Long staffId);
-    
-    @Query("UPDATE hr_schema.staff_academic_qualifications SET is_deleted = true, deleted_at = CURRENT_TIMESTAMP WHERE qualification_id = $1")
-    Mono<Void> softDelete(Long qualificationId);
-    
-    @Query("UPDATE hr_schema.staff_academic_qualifications SET is_deleted = true, deleted_at = CURRENT_TIMESTAMP WHERE staff_id = $1")
-    Mono<Void> softDeleteByStaffId(Long staffId);
 
     @Query("""
         SELECT * FROM hr_schema.staff_academic_qualifications WHERE staff_id = $1 

@@ -57,8 +57,8 @@ public class StaffManagementServiceImpl implements StaffManagementService {
               return staffRepository
                   .findByStaffCodeAndSchoolCodeAndIsDeletedFalse(
                       request.staffCode(), schoolDetails.schoolCode())
-                  .flatMap(existingStaff -> Mono.just(CreateStaffResponse.from(existingStaff)))
-                  .switchIfEmpty(createNewStaff(request, schoolDetails));
+                  .map(CreateStaffResponse::from)
+                  .switchIfEmpty(Mono.defer(() -> createNewStaff(request, schoolDetails)));
             });
     }
 

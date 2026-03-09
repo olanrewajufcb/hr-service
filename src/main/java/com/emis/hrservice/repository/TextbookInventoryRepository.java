@@ -11,7 +11,6 @@ import reactor.core.publisher.Mono;
 
 public interface TextbookInventoryRepository extends ReactiveCrudRepository<TextbookInventory, Long> {
 
-    Flux<TextbookInventory> findBySchoolId(Long schoolId);
 
     @Query("""
         SELECT * FROM hr_schema.textbook_inventory 
@@ -22,47 +21,22 @@ public interface TextbookInventoryRepository extends ReactiveCrudRepository<Text
     """)
     Flux<TextbookInventory> findBySchoolIdAndIsDeletedFalse(Long schoolId, int size, long offset);
     Mono<Integer> countBySchoolIdAndIsDeletedFalse(Long schoolId);
-    
-    Flux<TextbookInventory> findBySchoolIdAndBookTypeAndIsDeletedFalse(Long schoolId, BookType bookType);
-    
-    Flux<TextbookInventory> findBySchoolIdAndSubjectAreaAndIsDeletedFalse(Long schoolId, SubjectArea subjectArea);
-    
-    Flux<TextbookInventory> findBySchoolIdAndGradeLevelAndIsDeletedFalse(Long schoolId, GradeLevel gradeLevel);
-    
-    Flux<TextbookInventory> findBySchoolIdAndSubjectAreaAndGradeLevelAndIsDeletedFalse(
-            Long schoolId, 
-            SubjectArea subjectArea,
-            GradeLevel gradeLevel);
-    
+
+
+    @Query("""
+        SELECT * FROM hr_schema.textbook_inventory 
+        WHERE school_id = $1 
+        AND title = $2
+        AND subject_area = $3
+        AND edition = $4
+        AND grade_level = $5
+        AND is_deleted = false
+    """)
     Mono<TextbookInventory> findBySchoolIdAndTitleAndSubjectAreaAndEditionAndGradeLevelAndIsDeletedFalse(
             Long schoolId, 
             String title,
-            SubjectArea subjectArea,
+            String subjectArea,
             String edition,
-            GradeLevel gradeLevel);
-    
-    @Query("""
-        SELECT * FROM hr_schema.textbook_inventory 
-        WHERE school_id = $1 
-        AND is_deleted = false 
-        AND available_quantity < 5 
-        AND status = 'ACTIVE'
-        ORDER BY available_quantity ASC
-    """)
-    Flux<TextbookInventory> findLowStockBooks(Long schoolId);
-    
-    @Query("""
-        SELECT * FROM hr_schema.textbook_inventory 
-        WHERE school_id = $1 
-        AND is_deleted = false 
-        AND status = 'ACTIVE'
-        AND (LOWER(title) LIKE LOWER(CONCAT('%', $2, '%')) 
-             OR LOWER(author) LIKE LOWER(CONCAT('%', $2, '%')))
-        ORDER BY subject_area, grade_level, title
-        LIMIT 50
-    """)
-    Flux<TextbookInventory> searchBooks(Long schoolId, String searchTerm);
-    
-    @Query("UPDATE hr_schema.textbook_inventory SET is_deleted = true, deleted_at = CURRENT_TIMESTAMP WHERE textbook_id = $1")
-    Mono<Void> softDelete(Long textbookId);
+            String gradeLevel);
+
 }

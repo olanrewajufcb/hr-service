@@ -17,17 +17,22 @@ public class LocalReportStorage implements ReportFileStorage {
 
     private final ServiceConfigurationProperties properties;
 
-    private static final Path ROOT = Paths.get("/var/emis/reports");
+    private static final String ROOT_PATH = "/var/emis/reports";
 
     @Override
     public Mono<String> upload(String fileName, byte[] content) {
     return Mono.fromCallable(
             () -> {
-              Files.createDirectories(ROOT);
-              Path path = ROOT.resolve(fileName);
+              Path root = getRoot();
+              Files.createDirectories(root);
+              Path path = root.resolve(fileName);
               Files.write(path, content);
               return properties.getStorageBaseUrl() + fileName;
             })
         .subscribeOn(Schedulers.boundedElastic());
+    }
+
+    protected Path getRoot() {
+        return Paths.get(ROOT_PATH);
     }
 }

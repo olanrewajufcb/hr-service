@@ -10,14 +10,9 @@ import reactor.core.publisher.Mono;
 @Repository
 public interface StaffSubjectSpecializationRepository extends ReactiveCrudRepository<StaffSubjectSpecialization, Long> {
 
-    Flux<StaffSubjectSpecialization> findByStaffId(Long staffId);
-    
-    Flux<StaffSubjectSpecialization> findByStaffIdAndIsDeletedFalse(Long staffId);
+
     
     Mono<StaffSubjectSpecialization> findByStaffIdAndSubjectCodeAndIsDeletedFalse(Long staffId, String subjectCode);
-    
-    @Query("UPDATE hr_schema.staff_subject_specializations SET is_deleted = true, deleted_at = CURRENT_TIMESTAMP WHERE specialization_id = $1")
-    Mono<Void> softDelete(Long specializationId);
 
     @Query("""
             SELECT EXISTS (SELECT 1 FROM hr_schema.staff_subject_specializations 

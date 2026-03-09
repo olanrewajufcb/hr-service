@@ -35,7 +35,6 @@ import java.util.concurrent.TimeoutException;
 public class StaffTeachingQualificationServiceImpl implements StaffTeachingQualificationService {
 
     private final StaffTeachingQualificationRepository staffTeachingQualificationRepository;
-    private final SchoolCacheService schoolCacheService;
     private final StaffRepository staffRepository;
     private final ServiceConfigurationProperties properties;
     private final TransactionalOperator transactionalOperator;
@@ -55,7 +54,7 @@ public class StaffTeachingQualificationServiceImpl implements StaffTeachingQuali
                                                 request.teachingQualification().name(),
                                                 request.subjectOfQualification().name())
                                         .map(StaffTeachingQualificationResponse::from)
-                                        .switchIfEmpty(addNewTeachingQualification(teachingQualificationMapper.toEntity(request), staff))
+                                        .switchIfEmpty(Mono.defer(() -> addNewTeachingQualification(teachingQualificationMapper.toEntity(request), staff)))
                 )
                 .as(transactionalOperator::transactional)
                 .doOnSuccess(response -> log.info("[{}] Staff teaching qualification added successfully: {}", requestId, response))

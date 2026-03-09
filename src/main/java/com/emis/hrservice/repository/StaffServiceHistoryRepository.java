@@ -25,18 +25,7 @@ public interface StaffServiceHistoryRepository extends ReactiveCrudRepository<St
         AND end_date IS NULL
     """)
     Mono<Void> updateStaffServiceHistory(Long staffId);
-    
-    @Query("""
-        SELECT * FROM hr_schema.staff_service_history 
-        WHERE staff_id = $1 
-        AND is_deleted = false 
-        ORDER BY start_date DESC 
-        LIMIT 1
-    """)
-    Mono<StaffServiceHistory> findLatestByStaffId(Long staffId);
-    
-    @Query("UPDATE hr_schema.staff_service_history SET is_deleted = true, deleted_at = CURRENT_TIMESTAMP WHERE history_id = $1")
-    Mono<Void> softDelete(Long historyId);
+
 
   @Query(
       """

@@ -52,8 +52,8 @@ public class StaffSubjectSpecializationServiceImpl implements StaffSubjectSpecia
             .flatMap(staff -> staffSubjectSpecializationRepository.findByStaffIdAndSubjectCodeAndIsDeletedFalse(
                        staff.getStaffId(), request.subjectCode())
                       .map(SubjectSpecializationResponse::from)
-                      .switchIfEmpty(staffSubjectSpecializationRepository.save(buildStaffSubjectSpecialization(staff, request))
-                      .map(SubjectSpecializationResponse::from)))
+                      .switchIfEmpty(Mono.defer(() -> staffSubjectSpecializationRepository.save(buildStaffSubjectSpecialization(staff, request))
+                              .map(SubjectSpecializationResponse::from))))
             .onErrorResume(DuplicateKeyException.class,
                     ex -> Mono.error(new ValidationException("Subject specialization already exists")));
 
